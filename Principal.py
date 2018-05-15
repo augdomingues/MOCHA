@@ -25,7 +25,7 @@ class Principal:
         elif args[0] == "e":
             parser = Parser(self.configurationParameters.communicationRadius)
             parser.collectMaxes(args[1])
-            extractor = Extractor(args[1], parser.maxT, parser.maxX, parser.maxY, self.configurationParameters.communicationRadius, parser.lines)
+            extractor = Extractor(args[1], parser.maxT, parser.maxX, parser.maxY, self.configurationParameters.communicationRadius, parser.filesize)
             extractor.extract()
             self.progressPercentage(100, 100)
             # CHAMAR CLASSIFICADORRRR
@@ -33,21 +33,21 @@ class Principal:
             if args[1] == "r":
                 parser = Parser(self.configurationParameters.communicationRadius)
                 newFile = parser.parseRaw(args[2])
-                extractor = Extractor(newFile, parser.maxT, parser.maxX, parser.maxY, self.configurationParameters.communicationRadius, parser.lines)
+                extractor = Extractor(newFile, parser.maxT, parser.maxX, parser.maxY, self.configurationParameters.communicationRadius, parser.filesize)
                 extractor.extract()
                 self.progressPercentage(100, 100)
                 # CHAMAR CLASSIFICADORRRR
             elif args[1] == "s":   
                 parser = Parser(self.configurationParameters.communicationRadius)
                 newFile = parser.parseSwim(args[2])
-                extractor = Extractor(newFile, parser.maxT, parser.maxX, parser.maxY, self.configurationParameters.communicationRadius, parser.lines)
+                extractor = Extractor(newFile, parser.maxT, parser.maxX, parser.maxY, self.configurationParameters.communicationRadius, parser.filesize)
                 extractor.extract()
                 self.progressPercentage(100, 100)
                 # CHAMAR CLASSIFICADORRRR
             elif args[1] == "n":      
                 parser = Parser(self.configurationParameters.communicationRadius)
                 newFile = parser.parseNS2(args[2])
-                extractor = Extractor(newFile, parser.maxT, parser.maxX, parser.maxY, self.configurationParameters.communicationRadius, parser.lines)
+                extractor = Extractor(newFile, parser.maxT, parser.maxX, parser.maxY, self.configurationParameters.communicationRadius, parser.filesize)
                 extractor.extract()
                 self.progressPercentage(100, 100)
                 # CHAMAR CLASSIFICADORRRR
@@ -63,7 +63,7 @@ class Principal:
                 split = line.split(" ")
                 self.configurationParameters.communicationRadius = float(split[1])
                 inn.close()
-            except Exception, e:
+            except e:
                 print("Configuration file incorrect!\nRecreating")
                 self.configurationParameters.recreateConfigurationFile()
                 print(e)
@@ -75,7 +75,7 @@ class Principal:
     def progressPercentage(self, remain, total):
         if remain > total:
             raise ValueError('IllegalArgumentException')
-        maxBareSize = 10 # 10unit for 100%
+        maxBareSize = 1 # 10unit for 100%
         remainProcent = ((100 * remain) / total) / maxBareSize
         defaultChar = '-'
         icon = "*"
@@ -84,9 +84,9 @@ class Principal:
             bare += defaultChar
         bare += "]"
         bareDone = "["
-        for i in range (0, remainProcent):
+        for i in range (0, int(remainProcent)):
             bareDone += icon
-        bareRemain = bare[remainProcent: len(bare)]
+        bareRemain = bare[int(remainProcent): len(bare)]
         print(chr(27) + "[2J")
         print("\r" + bareDone + bareRemain + " " + str(remainProcent * 10) + "%")
 

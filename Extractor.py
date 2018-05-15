@@ -30,11 +30,7 @@ class Extractor:
         self.maxY = maxY
         self.r = r
         self.lines = lines
-        try:
-            self.initialize(self.file)
-        except Exception, e:
-            print "init"
-            print(e)
+        self.initialize(self.file)
  
     def initialize(self, file):
         self.filesForFitting = open("filesForFitting.txt", 'r+')
