@@ -16,14 +16,19 @@ class Vertex:
         return self.adjacent[neighbor]
 
 class Edge:
-    def __init__(self, src, target):
+    def __init__(self, src, target, weight=0):
         self.src = src
         self.target = target
+        self.weight = weight
+
+    def get_weight(self):
+        return self.weight
 
 class Graph:
     def __init__(self):
         self.vert_dict = {}
-        self.edges = []
+        #self.edges = []
+        self.edges = {}
 
     def add_vertex(self, node):
         new_vertex = Vertex(node)
@@ -39,9 +44,13 @@ class Graph:
         if to not in self.vert_dict:
             self.add_vertex(to)
 
-        if not self.containsEdge(frm, to):
-            edge = Edge(frm, to)
-            self.edges.append(edge)
+        if (frm,to) not in self.edges:
+            edge = Edge(frm,to,cost)
+            self.edges[(frm,to)] = edge
+
+        #if not self.containsEdge(frm, to):
+        #    edge = Edge(frm, to)
+        #    self.edges.append(edge)
 
         self.vert_dict[frm].add_neighbor(self.vert_dict[to], cost)
         self.vert_dict[to].add_neighbor(self.vert_dict[frm], cost)
@@ -50,31 +59,53 @@ class Graph:
         return self.vert_dict.keys()
 
     def containsEdge(self, user1, user2):
-        try:
-            a = self.get_vertex(user1)
-            a = self.get_vertex(user2)
-        except:
-            return False
-
-        vert1 = self.get_vertex(user1)
-        try:
-            for vert2 in vert1.get_connections():
-                if vert2.get_id() == user2:
-                    return True
-        except:
-            pass
-        return False
-
+        return (user1,user2) in self.edges
+        
+        #try:
+        #    a = self.get_vertex(user1)
+        #    a = self.get_vertex(user2)
+        #except:
+        #    return False
+        #
+        #vert1 = self.get_vertex(user1)
+        #try:
+        #    for vert2 in vert1.get_connections():
+        #        if vert2.get_id() == user2:
+        #            return True
+        #except:
+        #    pass
+        #return False
+    
+    """
+        getEdgeWeight: returns the weight of the edge
+        params:
+            user1: origin node (frm)
+            user2: destination node (to)
+        returns:
+            edge weight if existent; -1 otherwise
+    """
     def getEdgeWeight(self, user1, user2):
-        u1 = self.get_vertex(user1)
-        u2 = self.get_vertex(user2)
+        if self.containsEdge(user1,user2):
+            return self.edges[(user1,user2)].get_weight()
+        else:
+            return -1
+        #u1 = self.get_vertex(user1)
+        #u2 = self.get_vertex(user2)
 
-        try:
-            return u2.get_weight(u1)
-        except:
-            return 0
+        #try:
+        #    return u2.get_weight(u1)
+        #except:
+        #    return 0
 
+    """
+        edgeSet: returns a vector containing all the edges
+        params:
+            
+        returns:
+            a vector containing all the edges
+    """
     def edgeSet(self):
-        return self.edges
+        return [items for key,item in self.edges.items()]
+        #return self.edges
 
 
