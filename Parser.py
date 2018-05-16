@@ -6,6 +6,7 @@ from Cell import Cell
 from Graph import Graph
 from Graph import Vertex
 from User import User
+from Bar import Bar
 
 class Parser:
  
@@ -21,18 +22,22 @@ class Parser:
 
         with open(self.generateFileName(filename),'w') as out:
             encounters = {}
-            print("Parsing file!\n")
+            bar = Bar(self.filesize, "Parsing SWIM file")
             with open(filename, 'r') as entrada:
                 for i,line in enumerate(entrada):
-                    self.progressPercentage(i, self.filesize)
+                    #self.progressPercentage(i, self.filesize)
+                    bar.progress()
+
                     components = line.strip().split(" ")
                     components = self.removeEmpty(components)
-                    print("Components: {}".format(components))
+                    
                     encounter = Encounter(components[2], components[3])
+                    
                     if encounter.toString() in encounters:
                         e = encounters[encounter.toString()]
                         out.write("{} {} {} {} {} {} {} {} {}\n".format(components[2],components[3],components[0],e,(float(components[0])-e),components[4],components[5],components[6],components[7]))
                     encounters[encounter.toString()] = float(components[0])
+        bar.finish()
         return filename
  
     def removeEmpty(self, components):
@@ -115,10 +120,10 @@ class Parser:
 
         with open(self.generateFileName(filename),'w+') as out:
             newLines = 0
-            print("Parsing file!")
+            bar = Bar(self.filesize, "Parsing RAW file")
             with open(filename) as entrada:
                 for i,line in enumerate(entrada):
-                    self.progressPercentage(i, self.filesize)
+                    bar.progress()
                     components = line.split(" ")
                     
                     _id = int(components[0])
@@ -236,6 +241,7 @@ class Parser:
                         rangeXBegin += 1
 
         self.filesize = newLines
+        bar.finish()
         #return self.generateFileName(filename)
  
     def removeUserFromCell(self, usersInCell, id):
