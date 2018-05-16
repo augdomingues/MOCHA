@@ -45,6 +45,9 @@ class Bar:
                 minute += 1
                 time -= 60
         seconds = math.floor(time)
+        hour = "0" + str(hour) if hour < 10 else hour
+        minute = "0" + str(minute) if minute < 10 else minute
+        seconds = "0" + str(seconds) if seconds < 10 else seconds
         return "{}:{}:{}".format(hour,minute,seconds)
 
     def finish(self):

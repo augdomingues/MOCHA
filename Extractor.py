@@ -5,6 +5,8 @@ from Encounter import Encounter
 import sys
 import math
 import random
+import os
+from Bar import Bar
 
 class Home:
     def __init__(self, l, d):
@@ -22,33 +24,32 @@ class Location:
         self.visitTime = vt
 
 class Extractor:
-    def __init__(self, file, maxTime, maxX, maxY, r, lines):
+    def __init__(self, filename, maxTime, maxX, maxY, r, filesize):
  
-        self.file = file
+        self.file = filename
         self.maxTime = maxTime
         self.maxX = maxX
         self.maxY = maxY
         self.r = r
-        self.lines = lines
+        self.filesize = filesize
         self.initialize(self.file)
- 
-    def initialize(self, file):
+
+    def initialize(self, filename):
+        if not os.path.exists("filesForFitting.txt"):
+            open("filesForFitting.txt", "w")
         self.filesForFitting = open("filesForFitting.txt", 'r+')
         self.inco = {} #<String, LinkedList<Double>>
-        self.incoWriter = open(self.generateFileName(file, "inco"), 'w')
+        self.incoWriter = open(self.generateFileName(filename, "inco"), 'w')
         self.incoGraph = Graph()
         self.codu = {} #<String, LinkedList<Double>>
-        self.coduWriter = open(self.generateFileName(file, "codu"), 'w')
+        self.coduWriter = open(self.generateFileName(filename, "codu"), 'w')
         self.maxcon = [0] * (int(self.maxTime/3600) + 1)
-        self.maxconWriter = open(self.generateFileName(file, "maxcon"), 'w')
         self.edgep = {} #<String, Double>
         self.encounters = {} #<String, Integer>
-        self.edgepWriter = open(self.generateFileName(file, "edgep"), 'w')
         self.topo = {} #<String, Double>
         self.totalNeighbors = {} #<String, LinkedList<String>>
         self.topoGraph = Graph()
-        self.topoWriter = open(self.generateFileName(file, "topo"), 'w')
-        self.socorWriter = open(self.generateFileName(file, "socor"), 'w')
+        self.socorWriter = open(self.generateFileName(filename, "socor"), 'w')
         self.locations = {} #<String, Integer>
         self.locationsIndex = 0
         self.venues = {} #<Integer, String>
@@ -56,78 +57,73 @@ class Extractor:
         self.userHomes = {} #<String, Home>
  
         self.radius = {} #<String, Double>
-        self.radgWriter = open(self.generateFileName(file, "radg"), 'w')
         self.trvd = {} #<String, LinkedList<TravelPair>>
-        self.trvdWriter = open(self.generateFileName(file, "trvd"), 'w')
         self.vist = {} #<String, HashMap<Integer, Double>>
-        self.vistWriter = open(self.generateFileName(file, "vist"), 'w')
+
+
+    def extractMetrics(self,metrics,line):
+        functions = {"INCO": self.extractINCO, "CODU": self.extractCODU, "MAXCON": self.extractMAXCON, "EDGEP": self.extractEDGEP,
+                     "TOPO": self.extractTOPO, "Home": self.extractHome, "TRVD": self.extractTRVD, "RADG": self.extractRADG}
+        for m in metrics:
+            functions[m](line)
  
     def extract(self):
  
         #try:
-            self.voronoi()
-            self.extractVenues()
-            i = 0
-            self.progressPercentage(100, 100)
-            print("\nExtracting INCO, CODU, MAXCON and EDGEP")
-            with open(self.file) as inn:
-                _lines = inn. readlines()
-                for line in _lines:
-                    self.inn = inn
-                    self.progressPercentage(i, self.lines)
-                    i += 1
-                    self.extractINCO(line)
-                    self.extractCODU(line)
-                    self.extractMAXCON(line)
-                    self.extractEDGEP(line)
-                    self.extractTOPO(line)
-                    self.extractHome(line)
-                    self.extractTRVD(line)
-                    self.extractRADG(line)
+        self.voronoi()
+       # self.extractVenues()
+        i = 0
 
+        bar = Bar(self.filesize,"Extracting INCO, CODU, MAXCON and EDGEP")
+        with open(self.file, "r") as entrada:
+            for line in entrada:
+                self.inn = inn
+                
+                bar.progress()
 
-            edges = self.topoGraph.edgeSet()
- 
-            i = 0
-            self.progressPercentage(100, 100)
-            print("\nExtracting TOPO and SOCOR")
-            for edge in edges:
-                self.progressPercentage(i, len(edges))
-                i += 1
-                source = edge.src
-                target = edge.target
-                encounter = Encounter(int(source), int(target))
- 
-                if (encounter.toString() not in self.totalNeighbors):
-                    self.totalNeighbors[encounter.toString()] = []
- 
-                # LinkedList<String> neighborsSource = new
-                # LinkedList<String>(Graphs.neighborListOf(topoGraph, source));
- 
-                # LinkedList<String> neighborsTarget = new
-                # LinkedList<String>(Graphs.neighborListOf(topoGraph, target));
- 
-                neighborsSource = self.topoGraph.get_vertex(source).get_connections()
-                degreeSrc = len(neighborsSource)
-                neighborsTarget = self.topoGraph.get_vertex(target).get_connections()
-                degreeDest = len(neighborsTarget)
- 
-                edgeExists = 0
-                if (self.topoGraph.containsEdge(source, target)):
-                    edgeExists = 1
- 
-                edgesTO = neighborsSource
+                self.extractMetrics(["INCO", "CODU", "MAXCON", "EDGEP", "TOPO", "Home", "TRVD", "RADG"],line)
 
-                for aux in neighborsTarget:
-                    edgesTO.remove(aux)
- 
-                to = len(edgesTO)
- 
-                toPct = (float(to) / ((degreeSrc - edgeExists) + (degreeDest - edgeExists) - to))
- 
-                topo[encounter.toString()] = toPct
- 
-                # HashSet<String> a = new HashSet<>(neighborsTarget);
+        edges = self.topoGraph.edgeSet()
+        bar.finish()
+        i = 0
+        bar = Bar(self.filesize,"Extracting TOPO and SOCOR")
+        for edge in edges:
+            bar.progress()
+            i += 1
+            source = edge.src
+            target = edge.target
+            encounter = Encounter(int(source), int(target))
+
+            if (encounter.toString() not in self.totalNeighbors):
+                self.totalNeighbors[encounter.toString()] = []
+
+            # LinkedList<String> neighborsSource = new
+            # LinkedList<String>(Graphs.neighborListOf(topoGraph, source));
+
+            # LinkedList<String> neighborsTarget = new
+            # LinkedList<String>(Graphs.neighborListOf(topoGraph, target));
+
+            neighborsSource = self.topoGraph.get_vertex(source).get_connections()
+            degreeSrc = len(neighborsSource)
+            neighborsTarget = self.topoGraph.get_vertex(target).get_connections()
+            degreeDest = len(neighborsTarget)
+
+            edgeExists = 0
+            if (self.topoGraph.containsEdge(source, target)):
+                edgeExists = 1
+
+            edgesTO = neighborsSource
+
+            for aux in neighborsTarget:
+                edgesTO.remove(aux)
+
+            to = len(edgesTO)
+
+            toPct = (float(to) / ((degreeSrc - edgeExists) + (degreeDest - edgeExists) - to))
+
+            topo[encounter.toString()] = toPct
+        bar.finish()
+            # HashSet<String> a = new HashSet<>(neighborsTarget);
                 # for (String string : neighborsSource) {
                 # for (String string2 : neighborsTarget) {
                 # if
@@ -156,31 +152,37 @@ class Extractor:
                 # } else {
                 # topo.put(encounter.toString(), 1.0)
             
-            self.normalizeEDGEP()
-            self.extractSOCOR()
-            self.printMAXCON()
-            self.printEDGEP()
-            self.printTOPO()
-            self.printTabela()
- 
-            self.printRADG()
-            self.printTRVD()
-            self.printVIST()
- 
-            self.radgWriter.close()
-            self.vistWriter.close()
-            self.trvdWriter.close()
- 
-            self.incoWriter.close()
-            self.coduWriter.close()
-            self.maxconWriter.close()
-            self.edgepWriter.close()
-            self.topoWriter.close()
-            self.socorWriter.close()
-            self.filesForFitting.close()
-        #except Exception, e:
-        #    print "Extract"
-        #    print(e)
+        self.normalizeEDGEP()
+        self.extractSOCOR()
+       # self.printMAXCON() TODO check error on autocorrelation
+        self.printEDGEP()
+        self.printTOPO()
+        self.printTabela()
+
+        self.printRADG()
+        self.printTRVD()
+        self.printVIST()
+
+
+        self.incoWriter.close()
+        self.coduWriter.close()
+        self.socorWriter.close()
+        self.filesForFitting.close()
+
+    #def printMetric(self,name,values,sumByKey = False):
+    #    with open(self.generateFileName(self.file,name), 'w') as saida:
+    #        for key,item in values.items():
+    #            if sumByKey:
+    #                total = sum()
+    #            saida.write("{}, {}\n".format(key,item))
+    def generateFileName(self, filename, characteristic):
+        if "." in filename:
+            filename = filename.replace(".","_" + characteristic + ".")
+        else:
+            filename += "_{}".format(characteristic)
+
+        self.filesForFitting.write(str(self.trim(filename)) + "\n")
+        return filename
  
     def printTabela(self):
         out = open('table.csv','w')
@@ -195,84 +197,81 @@ class Extractor:
             self.edgep[key] =  self.edgep[key] / (math.floor((self.maxTime / 86400)))
  
     def printMAXCON(self):
- 
-        autocorrelations = self.autoCorrelation(self.maxcon, 24)
-
-        for i in range (0, len(autocorrelations)):
-            self.maxconWriter.write(str(autocorrelations[i]) + "\n")
+        with open(self.generateFileName(self.file,"maxcon"), 'w') as saida:
+            autocorrelations = self.autoCorrelation(self.maxcon, 24)
+            for ac in autocorrelations:
+                saida.write("{}\n".format(ac))
  
     def printTRVD(self):
-        keys = self.trvd.keys()
-        for key in keys:
-            totalDistance = 0
-            _list = self.trvd[key]
-            for t in _list:
-                totalDistance += t.distance
-                self.trvdWriter.write(str(t.distance) + "\n")
-            # self.trvdWriter.write(totalDistance/list.size() + "\n")
+        with open(self.generateFileName(self.file,"trvd"), 'w') as saida: 
+            for key,item in self.trvd.items():
+                totalDistance = sum([t.distance for t in item])
+                totalDistance = totalDistance/len(item) if len(item) > 0 else 0.0
+                saida.write("{},{}\n".format(key,totalDistance))
 
     def printRADG(self):
-        keys = self.radius.keys()
-        for key in keys:
-            self.radgWriter.write(str(self.radius[key]) + "\n")
+        with open(self.generateFileName(self.file,"radg"), 'w') as saida:
+            for key,item in self.radius.items():
+                saida.write("{},{}\n".format(key,item))
 
     def printVIST(self):
-        keys = self.vist.keys()
-        for key in keys:
-            vistd = 0
-            visits = self.vist[key]
-            visit_keys = visits.keys()
-            for v in visit_keys:
-                vistd += visits[v]
-                self.vistWriter.write(str(visits[v]) + "\n")
-            # if(vistd == 0):
-            #   self.vistWriter.write("0.0\n")
-            # else:
-            #   self.vistWriter.write(vistd/len(visit_keys) + "\n")
- 
+        with open(self.generateFileName(self.file,"vist"), 'w') as saida:
+            for key,item in self.vist.items():
+                vistd = sum([item for key,item in item.items()])
+                vistd = 0 if len(item) == 0 else vistd/len(items)
+                saida.write("{},{}\n".format(key,vistd))
+
     def printEDGEP(self):
-        keys = self.edgep.keys()
-        for key in keys:
-            self.edgepWriter.write(str(self.edgep[key]) + "\n")
+        with open(self.generateFileName(self.file,"edgep"), 'w') as saida:
+            for key,item in self.edgep.items():
+                saida.write("{},{}\n".format(key,item))
+    
+    def printTOPO(self):
+        with open(self.generateFileName(self.file,"topo"), 'w') as saida:
+            for key,item in self.topo.items():
+                saida.write("{},{}\n".format(key,item))
+ 
  
     def extractINCO(self, line):
- 
-        components = line.split(" ")
-        user1 = components[0]
-        user2 = components[1]
- 
-        incoEncounters = []
- 
-        if (self.incoGraph.containsEdge(user1, user2)):
-            encounter = Encounter(int(user1), int(user2))
-            incoEncounters = self.inco[encounter.toString()]
-            incoEncounters.append(float(components[2]) - float(self.incoGraph.getEdgeWeight(user1, user2)))
-            self.inco[encounter.toString()] =  incoEncounters
-            self.incoWriter.write(str(float(components[2]) - float(self.incoGraph.getEdgeWeight(user1, user2))) + "\n")
-            self.incoGraph.add_edge(user1, user2, float(components[3]))
- 
-        else:
-            self.incoGraph.add_vertex(user1)
-            self.incoGraph.add_vertex(user2)
-            encounter = Encounter(int(user1), int(user2))
-            self.inco[encounter.toString()] = []
-            self.incoGraph.add_edge(user1, user2, float(components[3]))
+        with open(self.generateFileName(self.file,"inco"), 'a+') as saida:
+            
+            components = line.strip().split(" ")
+            user1 = components[0]
+            user2 = components[1]
+     
+            incoEncounters = []
+     
+            if (self.incoGraph.containsEdge(user1, user2)):
+                encounter = Encounter(int(user1), int(user2))
+                incoEncounters = self.inco[encounter.toString()]
+                w = float(self.incoGraph.getEdgeWeight(user1,user2))
+                incoEncounters.append(float(components[2]) - float(w))
+                self.inco[encounter.toString()] =  incoEncounters
+                self.incoWriter.write("{}\n".format(float(components[2]) - w))
+                self.incoGraph.add_edge(user1, user2, float(components[3]))
+     
+            else:
+                self.incoGraph.add_vertex(user1)
+                self.incoGraph.add_vertex(user2)
+                encounter = Encounter(int(user1), int(user2))
+                self.inco[encounter.toString()] = []
+                self.incoGraph.add_edge(user1, user2, float(components[3]))
  
     def extractCODU(self, line):
-        components = line.split(" ")
-        timeI = float(components[3])
-        timeF = float(components[2])
- 
-        self.coduWriter.write(str(timeF - timeI) + "\n")
+        with open(self.generateFileName(self.file,"codu"), 'a+') as saida:
+            components = line.strip().split(" ")
+            timeI = float(components[3])
+            timeF = float(components[2])
+            saida.write("{}\n".format(timeF - timeI))
  
     def extractMAXCON(self, line):
-        components = line.split(" ")
+        components = line.strip().split(" ")
         hour = int((float(components[3]) / 3600))
         self.maxcon[hour] += 1
  
     def extractEDGEP(self, line):
  
-        components = line.split(" ")
+        components = line.strip().split(" ")
         encounterDay = int(math.floor(float(components[3]) / 86400))
         encounter = Encounter(int(components[0]), int(components[1]))
  
@@ -301,7 +300,7 @@ class Extractor:
         # }
  
     def extractTOPO(self, line):
-        components = line.split(" ")
+        components = line.strip().split(" ")
         user1 = components[0]
         user2 = components[1]
  
@@ -311,31 +310,22 @@ class Extractor:
         if (not self.topoGraph.containsEdge(user1, user2)):
             self.topoGraph.add_edge(user1, user2)
 
-    def printTOPO(self):
-        keys = topo.keys()
-        for key in keys:
-            self.topoWriter.write(str(self.topo[key]) + "\n")
- 
     def extractSOCOR(self):
         self.socor = 0
-        standardDeviationTOPO = self.calculateStandardDeviation(topo)
-        standardDeviationEDGEP = self.calculateStandardDeviation(edgep)
+        standardDeviationTOPO = self.calculateStandardDeviation(self.topo)
+        standardDeviationEDGEP = self.calculateStandardDeviation(self.edgep)
         covariance = self.calculateCovariance()
         # print("\nSTDTOPO = " + standardDeviationTOPO)
         # print("\nSTDEDGEP = " + standardDeviationEDGEP)
         # print("\nCOV = " + covariance)
-        self.socor = covariance / (standardDeviationEDGEP * standardDeviationTOPO)
-        socorI = socor
-        if (self.socorI != None):
+        divisor = (standardDeviationEDGEP * standardDeviationTOPO)
+        self.socor = covariance/divisor if divisor > 0 else 0
+        socorI = self.socor
+        if (socorI != None):
             self.socorWriter.write("" + str(self.socor))
         else:
             self.socorWriter.write("Impossible to calculate socor, there is no correlation.")
  
-    def generateFileName(self, file, characteristic):
-        fileName = file
-        fileName = fileName.replace(".","_" + characteristic + ".")
-        self.filesForFitting.write(str(self.trim(fileName)) + "\n")
-        return fileName
  
     def trim(self, fileName):
         i = len(fileName) - 1
@@ -348,10 +338,11 @@ class Extractor:
         meanTOPO = self.calculateMean(self.topo)
         meanEDGEP = self.calculateMean(self.edgep)
         keys = self.topo.keys()
-        for key in keys:
-            if (self.topo[key] != None and self.edgep[key] != None):
-                covariance += (self.topo[key] - meanTOPO) * (self.edgep[key] - meanEDGEP)
-        covariance /= len(keys)
+        if len(keys) > 0:
+            for key in keys:
+                if (self.topo[key] != None and self.edgep[key] != None):
+                    covariance += (self.topo[key] - meanTOPO) * (self.edgep[key] - meanEDGEP)
+            covariance /= len(keys)
         return covariance
  
     def calculateStandardDeviation(self, map):
@@ -359,22 +350,18 @@ class Extractor:
         mean = self.calculateMean(map)
  
         keys = map.keys()
- 
-        for key in keys:
-            if (map[key] != None):
-                standardDeviation += (map[key] - mean) ** 2
-        standardDeviation /= (len(keys) - 1)
+        
+        if len(keys) - 1 > 0:
+            for key in keys:    
+                if (map[key] != None):
+                    standardDeviation += (map[key] - mean) ** 2
+            standardDeviation /= (len(keys) - 1)
  
         return math.sqrt(standardDeviation)
  
-    def calculateMean(self,map):
-        keys = map.keys()
-        mean = 0
-        for key in keys:
-            if (map[key] != None):
-                mean += map[key]
-        mean /= len(keys)
- 
+    def calculateMean(self,values):
+        valid_values = [item for key,item in values.items() if item != None]
+        mean = sum(valid_values) / max(len(valid_values),1)
         return mean
  
     def progressPercentage(self, remain, total):
@@ -400,7 +387,7 @@ class Extractor:
             print("\n")
  
     def extractLocations(self, line):
-        split = line.split(" ")
+        split = line.strip().split(" ")
         try:
             aux = self.locations[split[5] + " " + split[6]]
         except:
@@ -468,7 +455,7 @@ class Extractor:
     '''
     
     def extractHome(self, line):
-        components = line.split(" ")
+        components = line.strip().split(" ")
         firstUserLocation = self.getClosestVenue(components[5], components[6])
         firstUser = components[0]
 
@@ -515,7 +502,7 @@ class Extractor:
       
     '''
     def extractRADG(self, line):
-        components = line.split(" ")
+        components = line.strip().split(" ")
         firstUser = components[0]
         secondUser = components[1]
  
@@ -539,7 +526,7 @@ class Extractor:
             self.radius[secondUser] = secondUserDistance
  
     def extractTRVD(self, line):
-        components = line.split(" ")
+        components = line.strip().split(" ")
         firstUser = components[0]
         secondUser = components[1]
  
@@ -573,7 +560,7 @@ class Extractor:
             _lines = inn. readlines()
             for line in _lines:
                 self.extractLocations(line)
-                split = line.split(" ") # Changed this from \t to space
+                split = line.strip().split(" ") # Changed this from \t to space
      
                 user1 = int(split[0])
                 user1X = float(split[5])
