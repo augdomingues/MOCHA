@@ -1,3 +1,13 @@
+"""
+      
+     ( (
+     _)_)_
+   c(  M  )     MOCHA: a tool for MObility CHaracteristics Analysis
+   ,-\___/-.
+   `-------'
+
+
+"""
 class Vertex:
     def __init__(self, node):
         self.id = node
@@ -58,23 +68,19 @@ class Graph:
     def get_vertices(self):
         return self.vert_dict.keys()
 
+    
+    """
+        containsEdge: checks if the graph has an edge between node user1 and user2
+        params:
+            user1: origin node (frm)
+            user2: destination node (to)
+        returns:
+            True if exists; False otherwise
+    """
     def containsEdge(self, user1, user2):
         return (user1,user2) in self.edges
-        
-        #try:
-        #    a = self.get_vertex(user1)
-        #    a = self.get_vertex(user2)
-        #except:
-        #    return False
-        #
-        #vert1 = self.get_vertex(user1)
-        #try:
-        #    for vert2 in vert1.get_connections():
-        #        if vert2.get_id() == user2:
-        #            return True
-        #except:
-        #    pass
-        #return False
+    
+    
     
     """
         getEdgeWeight: returns the weight of the edge
@@ -89,13 +95,6 @@ class Graph:
             return self.edges[(user1,user2)].get_weight()
         else:
             return -1
-        #u1 = self.get_vertex(user1)
-        #u2 = self.get_vertex(user2)
-
-        #try:
-        #    return u2.get_weight(u1)
-        #except:
-        #    return 0
 
     """
         edgeSet: returns a vector containing all the edges
@@ -105,7 +104,4 @@ class Graph:
             a vector containing all the edges
     """
     def edgeSet(self):
-        return [items for key,item in self.edges.items()]
-        #return self.edges
-
-
+        return [item for item in self.edges.values()]

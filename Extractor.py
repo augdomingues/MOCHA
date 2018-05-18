@@ -69,39 +69,27 @@ class Extractor:
  
     def extract(self):
  
-        #try:
         self.voronoi()
        # self.extractVenues()
-        i = 0
 
         bar = Bar(self.filesize,"Extracting INCO, CODU, MAXCON and EDGEP")
         with open(self.file, "r") as entrada:
             for line in entrada:
                 self.inn = inn
-                
                 bar.progress()
-
                 self.extractMetrics(["INCO", "CODU", "MAXCON", "EDGEP", "TOPO", "Home", "TRVD", "RADG"],line)
-
         edges = self.topoGraph.edgeSet()
         bar.finish()
-        i = 0
+        
         bar = Bar(self.filesize,"Extracting TOPO and SOCOR")
         for edge in edges:
             bar.progress()
-            i += 1
             source = edge.src
             target = edge.target
             encounter = Encounter(int(source), int(target))
 
             if (encounter.toString() not in self.totalNeighbors):
                 self.totalNeighbors[encounter.toString()] = []
-
-            # LinkedList<String> neighborsSource = new
-            # LinkedList<String>(Graphs.neighborListOf(topoGraph, source));
-
-            # LinkedList<String> neighborsTarget = new
-            # LinkedList<String>(Graphs.neighborListOf(topoGraph, target));
 
             neighborsSource = self.topoGraph.get_vertex(source).get_connections()
             degreeSrc = len(neighborsSource)
@@ -123,38 +111,10 @@ class Extractor:
 
             topo[encounter.toString()] = toPct
         bar.finish()
-            # HashSet<String> a = new HashSet<>(neighborsTarget);
-                # for (String string : neighborsSource) {
-                # for (String string2 : neighborsTarget) {
-                # if
-                # (!totalNeighbors.get(encounter.toString()).contains(string))
-                # {
-                # LinkedList<String> newList =
-                # totalNeighbors.get(encounter.toString());
-                # newList.add(string);
-                # totalNeighbors.put(encounter.toString(), newList);
-                # }
-                #
-                # if
-                # (!totalNeighbors.get(encounter.toString()).contains(string2))
-                # {
-                # LinkedList<String> newList =
-                # totalNeighbors.get(encounter.toString());
-                # newList.add(string2);
-                # totalNeighbors.put(encounter.toString(), newList);
-                # }
-                #
-                # if (string.equals(string2)) {
-                #
-                # if (topo.containsKey(encounter.toString())) {
-                # topo.put(encounter.toString(), topo.get(encounter.toString())
-                # + 1);
-                # } else {
-                # topo.put(encounter.toString(), 1.0)
             
         self.normalizeEDGEP()
         self.extractSOCOR()
-       # self.printMAXCON() TODO check error on autocorrelation
+        #self.printMAXCON() TODO check error on autocorrelation
         self.printEDGEP()
         self.printTOPO()
         self.printTabela()
@@ -169,12 +129,6 @@ class Extractor:
         self.socorWriter.close()
         self.filesForFitting.close()
 
-    #def printMetric(self,name,values,sumByKey = False):
-    #    with open(self.generateFileName(self.file,name), 'w') as saida:
-    #        for key,item in values.items():
-    #            if sumByKey:
-    #                total = sum()
-    #            saida.write("{}, {}\n".format(key,item))
     def generateFileName(self, filename, characteristic):
         if "." in filename:
             filename = filename.replace(".","_" + characteristic + ".")
@@ -185,11 +139,9 @@ class Extractor:
         return filename
  
     def printTabela(self):
-        out = open('table.csv','w')
-        keys = self.topo.keys()
-        for key in keys:
-            out.write(str(key) + ";" + str(self.topo[key]) + ";" + str(self.edgep[key]) + "\n")
-        out.close()
+        with open("table.csv", "w") as saida:
+            for key in self.topo.keys():
+                out.write("{},{},{}\n".format(key,self.topo[key],self.edgep[key]))
  
     def normalizeEDGEP(self):
         keys = self.edgep.keys()

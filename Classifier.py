@@ -3,14 +3,14 @@ import warnings
 import numpy as np
 import scipy.stats as st
 import sys
+from Bar import Bar
  
 class Classifier:
 
     # Create models from data
-    def best_fit_distribution(self, data, bins=200, ax=None):
+    def best_fit_distribution(self, data, filename, bins=200, ax=None):
         """Model data by finding best fit distribution to data"""
         # Get histogram of original data
-        print "danilo"
         y, x = np.histogram(data, bins=bins, density=True)
         x = (x + np.roll(x, -1))[:-1] / 2.0
      
@@ -21,11 +21,11 @@ class Classifier:
         best_distribution = st.norm
         best_params = (0.0, 1.0)
         best_sse = np.inf
-     
+        
+        bar = Bar(len(DISTRIBUTIONS), "Fitting {}".format(filename))
         # Estimate distribution parameters from data
         for distribution in DISTRIBUTIONS:
-            print("Fitting to " + str(distribution) + "\n")
-            print ("...")
+            bar.progress()
             # Try to fit the distribution
             try:
                 # Ignore warnings from data that can't be fit
@@ -53,24 +53,17 @@ class Classifier:
                         best = -2*log(sse)+2*(len(params) + 1)
      
             except Exception:
-                print "oi"
                 pass
-     
+        bar.finish()
         return (best_distribution.name, best_params)
 
-    def __init__(self):
-        try:
-            print(" .....")
+    def __init__(self,filename):
+        self.filename = filename
 
-            filename = "dartmouth-parsed_codu.trace"
-            data = np.genfromtxt(filename)
-            print data
-            name, params = self.best_fit_distribution(filename)
-            print(str(name) + "  "  + str(params) + "\n")
-            print ("...")
-             
-        except Exception, e:
-            # TODO Auto-generated catch block
-            print (e)
-
-a = Classifier()
+    def classify(self):
+        with open(self.filename, "r") as entrada:
+            for line in entrada:
+                line = line.strip()
+                data = np.genfromtxt(line)
+                name,params = self.best_fit_distribution(data,line)
+                print("Fitted {} to {} with params [{}]".format(line,name,params))
