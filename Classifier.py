@@ -1,4 +1,5 @@
 import subprocess
+import math
 import warnings
 import numpy as np
 import scipy.stats as st
@@ -21,39 +22,44 @@ class Classifier:
         best_distribution = st.norm
         best_params = (0.0, 1.0)
         best_sse = np.inf
+
+        if "/" in filename:
+            metric = filename.split("/")[1]
+        elif "\\" in filename:
+            metric = filename.split("\\")[1]
+        else:
+            metric = filename
         
-        bar = Bar(len(DISTRIBUTIONS), "Fitting {}".format(filename))
+        bar = Bar(len(DISTRIBUTIONS), "Fitting {}".format(metric))
         # Estimate distribution parameters from data
         for distribution in DISTRIBUTIONS:
-            bar.progress()
             # Try to fit the distribution
-            try:
-                # Ignore warnings from data that can't be fit
-                with warnings.catch_warnings():
-                    warnings.filterwarnings('ignore')
-     
-                    # fit dist to data
-                    params = distribution.fit(data)
-     
-                    # Separate parts of parameters
-                    arg = params[:-2]
-                    loc = params[-2]
-                    scale = params[-1]
-     
-                    # Calculate fitted PDF and error with fit in distribution
-                    pdf = distribution.pdf(x, loc=loc, scale=scale, *arg)
-                    sse = np.sum(np.power(y - pdf, 2.0))
-     
-                     
-     
-                    # identify if this distribution is better
-                    if -2*log(sse)+2*(len(params) + 1) < best:
-                        best_distribution = distribution
-                        best_params = params
-                        best = -2*log(sse)+2*(len(params) + 1)
-     
-            except Exception:
-                pass
+            # Ignore warnings from data that can't be fit
+            warnings.filterwarnings('ignore')
+
+            # fit dist to data
+            params = distribution.fit(data)
+
+            # Separate parts of parameters
+            arg = params[:-2]
+            loc = params[-2]
+            scale = params[-1]
+
+            # Calculate fitted PDF and error with fit in distribution
+            pdf = distribution.pdf(x, loc=loc, scale=scale, *arg)
+            sse = np.sum(np.power(y - pdf, 2.0))
+            sse = -2*math.log(sse)+2*(len(params) + 1)     # SSE with Akaike's Information Criteria
+
+            # identify if this distribution is better
+            if sse < best_sse:
+                best_distribution = distribution
+                best_params = params
+                best_sse = sse
+            
+            print(" SSE of {} is {} (Current best: {})            ".format(distribution.name, round(sse,2), round(best_sse,2)), end="") 
+            bar.progress()
+                
+        print(" Fit to {} with params [{}]".format(best_distribution.name,best_params),end="")
         bar.finish()
         return (best_distribution.name, best_params)
 
@@ -65,5 +71,7 @@ class Classifier:
             for line in entrada:
                 line = line.strip()
                 data = np.genfromtxt(line)
+                if len(data) == 0:
+                    input("File '{}' is empty. Press Enter to proceed to next metric. ")
+                    continue
                 name,params = self.best_fit_distribution(data,line)
-                print("Fitted {} to {} with params [{}]".format(line,name,params))

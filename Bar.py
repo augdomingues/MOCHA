@@ -8,7 +8,7 @@ class Bar:
         self.value = initial
         self.increment = 1
         self.points = []
-        for i in range(0,100):
+        for i in range(0,min(self.limit,100)):
             self.points.append("░")
         self.current_point = 0
         self.starting_time = time.time()
@@ -17,20 +17,20 @@ class Bar:
 
     def progress(self):
         self.value += self.increment
-        percentage = (100 * self.value)/self.limit
+        percentage = (min(self.limit,100) * self.value)/self.limit
         point = percentage - self.current_point
         if point >= 1:
-            self.points[self.current_point % 100] = "█"
+            self.points[self.current_point % min(self.limit,100)] = "█"
             self.current_point += 1
             self.update()
 
     def update(self):
         out = "{}".format("".join(self.points))
-        rate = " {}/{} ".format(self.current_point,100)
+        rate = " {}/{} ".format(self.current_point,min(self.limit,100))
         elapsed = time.time() - self.starting_time
         elapsed = self.format_time(elapsed)
         elapsed = " [{}]".format(elapsed)
-        print("\r{} {}{}{}".format(self.info,out,rate,elapsed),end="")
+        print("\r{:<55} {}{}{}".format(self.info,out,rate,elapsed),end="")
 
     def format_time(self,time):
         hour = 0

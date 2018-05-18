@@ -10,6 +10,7 @@ class Principal:
  
     def __init__(self):
         self.readConfigurationParameters()
+        self.summary = {"-p": "Parsing ", "-e": "Extracting ", "-pe": "Parsing and Extracting ", "-r": "RAW trace ", "-s": "SWIM trace ", "-n": "NS2 trace"}
 
     def main(self, args):
         self.readConfigurationParameters()
@@ -22,7 +23,7 @@ class Principal:
             print("|                                                                          |")
             print("|    ( (                                                                   |")
             print("|    _)_)_                                                                 |")
-            print("|  c(  M  )     MOCHA: a tool for MObility CHaracteristics Analysis        |") 
+            print("|  c(  M  )     MOCHA: a tool for MObility CHaracteristics Analysis        |")
             print("|  ,-\___/-.                                                               |")
             print("|  `-------'                                                               |")
             print("|                                                                          |")
@@ -35,6 +36,10 @@ class Principal:
             print("+--------------------------------------------------------------------------+")
 
         else:
+            print("\n\t\t\t",end="")
+            for i in range(0,len(args) - 1):
+                print(self.summary[args[i]],end="")
+            print("from {}\n".format(args[-1]))
             # Parse trace
             parser = Parser(self.configurationParameters.communicationRadius)
 
@@ -50,7 +55,7 @@ class Principal:
                 parser.collectMaxes(args[1])
                 extractor = Extractor(args[1], parser.maxT, parser.maxX, parser.maxY, self.configurationParameters.communicationRadius, parser.filesize)
                 extractor.extract()
-                classifier = Classifier()
+                classifier = Classifier("filesForFitting.txt")
                 classifier.classify()
 
             # Parse and extract characteristics

@@ -25,8 +25,12 @@ class Location:
 
 class Extractor:
     def __init__(self, filename, maxTime, maxX, maxY, r, filesize):
- 
+        
+        # Checks if system is windows to create folder correctly
+        self.barra = "\\" if os.name == 'nt' else "/"
+        
         self.file = filename
+        self.generatedFileNames = {}
         self.maxTime = maxTime
         self.maxX = maxX
         self.maxY = maxY
@@ -34,10 +38,11 @@ class Extractor:
         self.filesize = filesize
         self.initialize(self.file)
 
+
     def initialize(self, filename):
-        if not os.path.exists("filesForFitting.txt"):
-            open("filesForFitting.txt", "w")
-        self.filesForFitting = open("filesForFitting.txt", 'r+')
+        if not os.path.exists(filename.split(".")[0].replace("_parsed", "") + "_metrics_folder{}".format(self.barra)):
+            os.makedirs(filename.split(".")[0].replace("_parsed", "") + "_metrics_folder{}".format(self.barra))
+        self.filesForFitting = open("filesForFitting.txt", 'w+')
         self.inco = {} #<String, LinkedList<Double>>
         self.incoWriter = open(self.generateFileName(filename, "inco"), 'w')
         self.incoGraph = Graph()
@@ -70,18 +75,18 @@ class Extractor:
     def extract(self):
  
         self.voronoi()
-       # self.extractVenues()
+        #self.extractVenues()
 
-        bar = Bar(self.filesize,"Extracting INCO, CODU, MAXCON and EDGEP")
+        bar = Bar(self.filesize/2,"Extracting INCO, CODU, MAXCON and EDGEP")
         with open(self.file, "r") as entrada:
             for line in entrada:
-                self.inn = inn
+                line = line.strip()
                 bar.progress()
-                self.extractMetrics(["INCO", "CODU", "MAXCON", "EDGEP", "TOPO", "Home", "TRVD", "RADG"],line)
+                self.extractMetrics(["INCO", "CODU", "MAXCON", "EDGEP", "TOPO"],line)#, "Home", "TRVD", "RADG"],line)
         edges = self.topoGraph.edgeSet()
         bar.finish()
         
-        bar = Bar(self.filesize,"Extracting TOPO and SOCOR")
+        bar = Bar(len(edges),"Extracting TOPO and SOCOR")
         for edge in edges:
             bar.progress()
             source = edge.src
@@ -100,16 +105,21 @@ class Extractor:
             if (self.topoGraph.containsEdge(source, target)):
                 edgeExists = 1
 
-            edgesTO = neighborsSource
+#            edgesTO = neighborsSource
 
-            for aux in neighborsTarget:
-                edgesTO.remove(aux)
+            # Counts the size of the intersection
+            to = 0
+            for t in neighborsTarget:
+                if t in neighborsSource:
+                    to += 1
 
-            to = len(edgesTO)
+            #to = len(edgesTO)
+
+#            to = len(neighborsSource) - len(neighborsTarget)
 
             toPct = (float(to) / ((degreeSrc - edgeExists) + (degreeDest - edgeExists) - to))
 
-            topo[encounter.toString()] = toPct
+            self.topo[encounter.toString()] = toPct
         bar.finish()
             
         self.normalizeEDGEP()
@@ -130,18 +140,20 @@ class Extractor:
         self.filesForFitting.close()
 
     def generateFileName(self, filename, characteristic):
+        filename = filename.replace("_parsed", "_metrics_folder")
         if "." in filename:
-            filename = filename.replace(".","_" + characteristic + ".")
+            filename = filename.replace(".",self.barra + characteristic)
         else:
-            filename += "_{}".format(characteristic)
-
-        self.filesForFitting.write(str(self.trim(filename)) + "\n")
+            filename += "{}{}.csv".format(self.barra,characteristic)
+        if filename not in self.generatedFileNames:
+            self.filesForFitting.write(str(self.trim(filename)) + "\n")
+        self.generatedFileNames[filename] = True
         return filename
  
     def printTabela(self):
         with open("table.csv", "w") as saida:
             for key in self.topo.keys():
-                out.write("{},{},{}\n".format(key,self.topo[key],self.edgep[key]))
+                saida.write("{},{},{}\n".format(key,self.topo[key],self.edgep[key]))
  
     def normalizeEDGEP(self):
         keys = self.edgep.keys()
@@ -159,31 +171,31 @@ class Extractor:
             for key,item in self.trvd.items():
                 totalDistance = sum([t.distance for t in item])
                 totalDistance = totalDistance/len(item) if len(item) > 0 else 0.0
-                saida.write("{},{}\n".format(key,totalDistance))
+                saida.write("{}\n".format(totalDistance))
 
     def printRADG(self):
         with open(self.generateFileName(self.file,"radg"), 'w') as saida:
             for key,item in self.radius.items():
-                saida.write("{},{}\n".format(key,item))
+                saida.write("{}\n".format(item))
 
     def printVIST(self):
         with open(self.generateFileName(self.file,"vist"), 'w') as saida:
             for key,item in self.vist.items():
                 vistd = sum([item for key,item in item.items()])
-                vistd = 0 if len(item) == 0 else vistd/len(items)
-                saida.write("{},{}\n".format(key,vistd))
+                vistd = vistd/max(len(item),1)#  0 if len(item) == 0 else vistd/len(items)
+                saida.write("{}\n".format(vistd))
 
     def printEDGEP(self):
         with open(self.generateFileName(self.file,"edgep"), 'w') as saida:
             for key,item in self.edgep.items():
-                saida.write("{},{}\n".format(key,item))
+                saida.write("{}\n".format(item))
     
     def printTOPO(self):
         with open(self.generateFileName(self.file,"topo"), 'w') as saida:
             for key,item in self.topo.items():
-                saida.write("{},{}\n".format(key,item))
+                saida.write("{}\n".format(item))
  
- 
+    # TODO: delete file if it exits in the beginnning
     def extractINCO(self, line):
         with open(self.generateFileName(self.file,"inco"), 'a+') as saida:
             
@@ -296,7 +308,8 @@ class Extractor:
                     covariance += (self.topo[key] - meanTOPO) * (self.edgep[key] - meanEDGEP)
             covariance /= len(keys)
         return covariance
- 
+    
+    #TODO: Replace by numpy calculation
     def calculateStandardDeviation(self, map):
         standardDeviation = 0
         mean = self.calculateMean(map)
@@ -315,28 +328,6 @@ class Extractor:
         valid_values = [item for key,item in values.items() if item != None]
         mean = sum(valid_values) / max(len(valid_values),1)
         return mean
- 
-    def progressPercentage(self, remain, total):
-        if (remain > total):
-            raise ValueError('IllegalArgumentException')
-        maxBareSize = 10; # 10unit for 100%
-        remainProcent = int(((100 * remain) / total) / maxBareSize)
-        defaultChar = '-'
-        bare = ""
-        icon = "*"
-        for i in range (0, maxBareSize):
-            bare += defaultChar
-        bare += "]"
-        bareDone = "["
-        for i in range (0, remainProcent):
-            bareDone += icon
-
-        bareRemain = bare[remainProcent: len(bare)]
-        print(chr(27) + "[2J")
-        print("\r" + bareDone + bareRemain + " " + str(remainProcent * 10) + "%")
-
-        if remain == total:
-            print("\n")
  
     def extractLocations(self, line):
         split = line.strip().split(" ")
@@ -373,8 +364,6 @@ class Extractor:
             self.venues[venuesIndex] = _set[randomIndex]
             venuesIndex += 1
  
-    def euclidianDistance(self, x1, y1, x2, y2):
-        return math.sqrt(((x1 - x2) ** 2) + ((y1 - y2) ** 2))
  
     '''
     getClosestVenue params x (String): x coordinate of users location y
@@ -407,6 +396,7 @@ class Extractor:
     '''
     
     def extractHome(self, line):
+        """       
         components = line.strip().split(" ")
         firstUserLocation = self.getClosestVenue(components[5], components[6])
         firstUser = components[0]
@@ -448,7 +438,10 @@ class Extractor:
                     self.userHomes[secondUser] = userHome
         else:
             self.userHomes[secondUser] = Home(secondUserLocation, 1)
- 
+
+        """
+    
+
     '''
     extractRADG params line (String): line to be processed return
       

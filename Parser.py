@@ -72,7 +72,7 @@ class Parser:
                 self.filesize += 1
                 self.filesize += 1
                 
-                components = line.split(" ")
+                components = line.strip().split(" ")
                 
                 time = float(components[3])
                 
