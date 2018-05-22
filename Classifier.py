@@ -1,4 +1,5 @@
 import subprocess
+import os
 import math
 import warnings
 import numpy as np
@@ -64,16 +65,26 @@ class Classifier:
         return (best_distribution.name, best_params)
 
     def __init__(self,filename):
-        self.filename = filename
+        self.barra = "\\" if os.name == 'nt' else "/"
+        self.filename = filename.split(".")[0].replace("_parsed", "") + "_metrics_folder{}".format(self.barra)
+        self.metrics = {}
 
     def classify(self):
-        with open(self.filename, "r") as entrada:
-            for line in entrada:
-                line = line.strip()
-                if "SOCOR" in line:
-                    continue
-                data = np.genfromtxt(line)
-                if len(data) == 0:
-                    input("File '{}' is empty. Press Enter to proceed to next metric. ")
-                    continue
-                name,params = self.best_fit_distribution(data,line)
+        with open("{}fittedMetrics.txt".format(self.filename), "w+") as saida:
+            with open("filesForFitting.txt", "r") as entrada:
+                for line in entrada:
+                    line = line.strip()
+                    if "SOCOR" in line:
+                        continue
+                    data = np.genfromtxt(line)
+                    if len(data) == 0:
+                        input("File '{}' is empty. Press Enter to proceed to next metric. ")
+                        continue
+                    name,params = self.best_fit_distribution(data,line)
+                    if "/" in line:
+                        metricName = line.split("/")[1].replace(".txt", "")
+                    elif "\\" in line:
+                        metricName = line.split("\\")[1].replace(".txt", "")
+                    saida.write("{},{},{}\n".format(metricName,name,params))
+                    self.metrics[metricName] = (name,params)
+        return self.metrics

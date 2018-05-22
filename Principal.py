@@ -55,7 +55,7 @@ class Principal:
                 parser.collectMaxes(args[1])
                 extractor = Extractor(args[1], parser.maxT, parser.maxX, parser.maxY, self.configurationParameters.communicationRadius, parser.filesize, self.metrics)
                 extractor.extract()
-                classifier = Classifier("filesForFitting.txt")
+                classifier = Classifier(args[1])
                 classifier.classify()
 
             # Parse and extract characteristics
@@ -72,7 +72,7 @@ class Principal:
                 
                 extractor = Extractor(newFile, parser.maxT, parser.maxX, parser.maxY, self.configurationParameters.communicationRadius, parser.filesize)
                 extractor.extract()
-                classifier = Classifier()
+                classifier = Classifier(newFile)
                 classifier.classify()
                 
     def readMetrics(self):
