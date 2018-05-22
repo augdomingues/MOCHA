@@ -70,6 +70,8 @@ class Classifier:
         with open(self.filename, "r") as entrada:
             for line in entrada:
                 line = line.strip()
+                if "SOCOR" in line:
+                    continue
                 data = np.genfromtxt(line)
                 if len(data) == 0:
                     input("File '{}' is empty. Press Enter to proceed to next metric. ")

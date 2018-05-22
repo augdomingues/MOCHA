@@ -9,6 +9,7 @@ from Bar import Bar
 class Principal:
  
     def __init__(self):
+        self.metrics = {}
         self.readConfigurationParameters()
         self.summary = {"-p": "Parsing ", "-e": "Extracting ", "-pe": "Parsing and Extracting ", "-r": "RAW trace ", "-s": "SWIM trace ", "-n": "NS2 trace"}
 
@@ -48,19 +49,18 @@ class Principal:
                     parser.parseRaw(args[2])
                 elif args[1] == "-s":
                     parser.parseSwim(args[2])
-            
             # Extract characteristics
             elif args[0] == "-e":
-
+                self.readMetrics()
                 parser.collectMaxes(args[1])
-                extractor = Extractor(args[1], parser.maxT, parser.maxX, parser.maxY, self.configurationParameters.communicationRadius, parser.filesize)
+                extractor = Extractor(args[1], parser.maxT, parser.maxX, parser.maxY, self.configurationParameters.communicationRadius, parser.filesize, self.metrics)
                 extractor.extract()
                 classifier = Classifier("filesForFitting.txt")
                 classifier.classify()
 
             # Parse and extract characteristics
             elif args[0] == "-pe":
-
+                self.readMetrics()
                 if args[1] == "-r":
                     newFile = parser.parseRaw(args[2])
                 
@@ -75,6 +75,17 @@ class Principal:
                 classifier = Classifier()
                 classifier.classify()
                 
+    def readMetrics(self):
+        if not os.path.exists("metrics.data"):
+            with open("metrics.data", "w+") as entrada:
+                entrada.write("# Use a # to ignore a metric\n")
+                entrada.write("INCO\nCODU\nSOCOR\nEDGEP\nTOPO\nRADG\nVIST\nTRVD")
+        with open("metrics.data", "r") as entrada:
+            for line in entrada:
+                line = line.strip().replace(" ", "")
+                if line[0] == "#":
+                    continue
+                self.metrics[line] = True
  
     def readConfigurationParameters(self):
         # TODO ler outro parametro do arquivo de configuracao

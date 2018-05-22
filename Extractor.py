@@ -24,53 +24,61 @@ class Location:
         self.visitTime = vt
 
 class Extractor:
-    def __init__(self, filename, maxTime, maxX, maxY, r, filesize):
+    def __init__(self, filename, maxTime, maxX, maxY, r, filesize, metrics):
         
         # Checks if system is windows to create folder correctly
         self.barra = "\\" if os.name == 'nt' else "/"
-        
-        self.file = filename
+        self.folderName = filename.split(".")[0].replace("_parsed", "") + "_metrics_folder{}".format(self.barra)
+        self.file, self.filesize = filename, filesize
         self.generatedFileNames = {}
-        self.maxTime = maxTime
-        self.maxX = maxX
-        self.maxY = maxY
-        self.r = r
-        self.filesize = filesize
-        self.initialize(self.file)
+        self.maxX, self.maxY, self.r, self.maxTime = maxX, maxY, r, maxTime
+        self.metrics = [key for key in metrics.keys()]
+        self.metricFiles = {}
 
-
-    def initialize(self, filename):
-        if not os.path.exists(filename.split(".")[0].replace("_parsed", "") + "_metrics_folder{}".format(self.barra)):
-            os.makedirs(filename.split(".")[0].replace("_parsed", "") + "_metrics_folder{}".format(self.barra))
-        self.filesForFitting = open("filesForFitting.txt", 'w+')
-        self.inco = {} #<String, LinkedList<Double>>
-        self.incoWriter = open(self.generateFileName(filename, "inco"), 'w')
+        # Structures for the metrics
+        self.inco = {}
         self.incoGraph = Graph()
-        self.codu = {} #<String, LinkedList<Double>>
-        self.coduWriter = open(self.generateFileName(filename, "codu"), 'w')
+        self.codu = {}
         self.maxcon = [0] * (int(self.maxTime/3600) + 1)
-        self.edgep = {} #<String, Double>
-        self.encounters = {} #<String, Integer>
-        self.topo = {} #<String, Double>
-        self.totalNeighbors = {} #<String, LinkedList<String>>
+        self.edgep = {}
+        self.encounters = {}
+        self.topo = {}
+        self.totalNeighbors = {}
         self.topoGraph = Graph()
-        self.socorWriter = open(self.generateFileName(filename, "socor"), 'w')
-        self.locations = {} #<String, Integer>
+        self.locations = {}
         self.locationsIndex = 0
-        self.venues = {} #<Integer, String>
-        self.usersVenues = {} #<Integer, Integer>
-        self.userHomes = {} #<String, Home>
- 
-        self.radius = {} #<String, Double>
-        self.trvd = {} #<String, LinkedList<TravelPair>>
-        self.vist = {} #<String, HashMap<Integer, Double>>
+        self.venues = {}
+        self.usersVenues = {}
+        self.userHomes = {}
+        self.radius = {}
+        self.trvd = {}
+        self.vist = {}
 
+        if not os.path.exists(self.folderName):
+            os.makedirs(self.folderName)
+        with open("filesForFitting.txt", "w+") as fitting:
+            for key in self.metrics:
+                filename = "{}{}.txt".format(self.folderName,key)
+                with open(filename, "w+") as saida:
+                    pass
+                fitting.write("{}\n".format(filename))
+                self.metricFiles[key] = filename
+
+
+    def printMetrics(self,metrics):
+        functions = {"EDGEP": self.printEDGEP, "TOPO": self.printTOPO, "RADG": self.printRADG, "TRVD": self.printTRVD, "VIST": self.printVIST,
+                     "MAXCON": self.printMAXCON}
+
+        for m in metrics:
+            if m in functions:
+                functions[m]()
 
     def extractMetrics(self,metrics,line):
         functions = {"INCO": self.extractINCO, "CODU": self.extractCODU, "MAXCON": self.extractMAXCON, "EDGEP": self.extractEDGEP,
                      "TOPO": self.extractTOPO, "Home": self.extractHome, "TRVD": self.extractTRVD, "RADG": self.extractRADG}
         for m in metrics:
-            functions[m](line)
+            if m in functions:
+                functions[m](line)
  
     def extract(self):
  
@@ -82,122 +90,90 @@ class Extractor:
             for line in entrada:
                 line = line.strip()
                 bar.progress()
-                self.extractMetrics(["INCO", "CODU", "MAXCON", "EDGEP", "TOPO"],line)#, "Home", "TRVD", "RADG"],line)
+                self.extractMetrics(self.metrics,line)#, "Home", "TRVD", "RADG"],line)
         edges = self.topoGraph.edgeSet()
         bar.finish()
         
-        bar = Bar(len(edges),"Extracting TOPO and SOCOR")
-        for edge in edges:
-            bar.progress()
-            source = edge.src
-            target = edge.target
-            encounter = Encounter(int(source), int(target))
+        if "TOPO" in self.metrics:
+            bar = Bar(len(edges),"Extracting TOPO and SOCOR")
+            for edge in edges:
+                bar.progress()
+                source = edge.src
+                target = edge.target
+                encounter = Encounter(int(source), int(target))
 
-            if (encounter.toString() not in self.totalNeighbors):
-                self.totalNeighbors[encounter.toString()] = []
+                if (encounter.toString() not in self.totalNeighbors):
+                    self.totalNeighbors[encounter.toString()] = []
 
-            neighborsSource = self.topoGraph.get_vertex(source).get_connections()
-            degreeSrc = len(neighborsSource)
-            neighborsTarget = self.topoGraph.get_vertex(target).get_connections()
-            degreeDest = len(neighborsTarget)
+                neighborsSource = self.topoGraph.get_vertex(source).get_connections()
+                degreeSrc = len(neighborsSource)
+                neighborsTarget = self.topoGraph.get_vertex(target).get_connections()
+                degreeDest = len(neighborsTarget)
 
-            edgeExists = 0
-            if (self.topoGraph.containsEdge(source, target)):
-                edgeExists = 1
+                edgeExists = 0
+                if (self.topoGraph.containsEdge(source, target)):
+                    edgeExists = 1
 
-#            edgesTO = neighborsSource
+                to = 0
+                for t in neighborsTarget:
+                    if t in neighborsSource:
+                        to += 1
 
-            # Counts the size of the intersection
-            to = 0
-            for t in neighborsTarget:
-                if t in neighborsSource:
-                    to += 1
-
-            #to = len(edgesTO)
-
-#            to = len(neighborsSource) - len(neighborsTarget)
-
-            toPct = (float(to) / ((degreeSrc - edgeExists) + (degreeDest - edgeExists) - to))
-
-            self.topo[encounter.toString()] = toPct
-        bar.finish()
-            
-        self.normalizeEDGEP()
-        self.extractSOCOR()
-        #self.printMAXCON() TODO check error on autocorrelation
-        self.printEDGEP()
-        self.printTOPO()
-        self.printTabela()
-
-        self.printRADG()
-        self.printTRVD()
-        self.printVIST()
+                toPct = (float(to) / ((degreeSrc - edgeExists) + (degreeDest - edgeExists) - to))
+                self.topo[encounter.toString()] = toPct
+            bar.finish()
+        
+        if "EDGEP" in self.metrics:
+            self.normalizeEDGEP()
+        if "SOCOR" in self.metrics:
+            self.extractSOCOR()
+        
+        self.printMetrics(self.metrics)
 
 
-        self.incoWriter.close()
-        self.coduWriter.close()
-        self.socorWriter.close()
-        self.filesForFitting.close()
-
-    def generateFileName(self, filename, characteristic):
-        filename = filename.replace("_parsed", "_metrics_folder")
-        if "." in filename:
-            filename = filename.replace(".",self.barra + characteristic)
-        else:
-            filename += "{}{}.csv".format(self.barra,characteristic)
-        if filename not in self.generatedFileNames:
-            self.filesForFitting.write(str(self.trim(filename)) + "\n")
-        self.generatedFileNames[filename] = True
-        return filename
- 
-    def printTabela(self):
-        with open("table.csv", "w") as saida:
-            for key in self.topo.keys():
-                saida.write("{},{},{}\n".format(key,self.topo[key],self.edgep[key]))
- 
     def normalizeEDGEP(self):
         keys = self.edgep.keys()
         for key in keys:
             self.edgep[key] =  self.edgep[key] / (math.floor((self.maxTime / 86400)))
  
     def printMAXCON(self):
-        with open(self.generateFileName(self.file,"maxcon"), 'w') as saida:
+        with open(self.metricFiles["MAXCON"], 'w') as saida:
             autocorrelations = self.autoCorrelation(self.maxcon, 24)
             for ac in autocorrelations:
                 saida.write("{}\n".format(ac))
  
     def printTRVD(self):
-        with open(self.generateFileName(self.file,"trvd"), 'w') as saida: 
+        with open(self.metricFiles["TRVD"], 'w') as saida:
             for key,item in self.trvd.items():
                 totalDistance = sum([t.distance for t in item])
                 totalDistance = totalDistance/len(item) if len(item) > 0 else 0.0
                 saida.write("{}\n".format(totalDistance))
 
     def printRADG(self):
-        with open(self.generateFileName(self.file,"radg"), 'w') as saida:
+        with open(self.metricFiles["RADG"], 'w') as saida:
             for key,item in self.radius.items():
                 saida.write("{}\n".format(item))
 
     def printVIST(self):
-        with open(self.generateFileName(self.file,"vist"), 'w') as saida:
+        with open(self.metricFiles["VIST"], 'w') as saida:
             for key,item in self.vist.items():
                 vistd = sum([item for key,item in item.items()])
                 vistd = vistd/max(len(item),1)#  0 if len(item) == 0 else vistd/len(items)
                 saida.write("{}\n".format(vistd))
 
     def printEDGEP(self):
-        with open(self.generateFileName(self.file,"edgep"), 'w') as saida:
+        with open(self.metricFiles["EDGEP"], 'w') as saida:
             for key,item in self.edgep.items():
                 saida.write("{}\n".format(item))
     
     def printTOPO(self):
-        with open(self.generateFileName(self.file,"topo"), 'w') as saida:
+        with open(self.metricFiles["TOPO"],'w') as saida:
             for key,item in self.topo.items():
                 saida.write("{}\n".format(item))
  
     # TODO: delete file if it exits in the beginnning
     def extractINCO(self, line):
-        with open(self.generateFileName(self.file,"inco"), 'a+') as saida:
+        with open(self.metricFiles["INCO"], 'a') as saida:
             
             components = line.strip().split(" ")
             user1 = components[0]
@@ -211,7 +187,7 @@ class Extractor:
                 w = float(self.incoGraph.getEdgeWeight(user1,user2))
                 incoEncounters.append(float(components[2]) - float(w))
                 self.inco[encounter.toString()] =  incoEncounters
-                self.incoWriter.write("{}\n".format(float(components[2]) - w))
+                saida.write("{}\n".format(float(components[2]) - w))
                 self.incoGraph.add_edge(user1, user2, float(components[3]))
      
             else:
@@ -222,7 +198,7 @@ class Extractor:
                 self.incoGraph.add_edge(user1, user2, float(components[3]))
  
     def extractCODU(self, line):
-        with open(self.generateFileName(self.file,"codu"), 'a+') as saida:
+        with open(self.metricFiles["CODU"],'a') as saida:
             components = line.strip().split(" ")
             timeI = float(components[3])
             timeF = float(components[2])
@@ -275,22 +251,19 @@ class Extractor:
             self.topoGraph.add_edge(user1, user2)
 
     def extractSOCOR(self):
-        self.socor = 0
-        standardDeviationTOPO = self.calculateStandardDeviation(self.topo)
-        standardDeviationEDGEP = self.calculateStandardDeviation(self.edgep)
-        covariance = self.calculateCovariance()
-        # print("\nSTDTOPO = " + standardDeviationTOPO)
-        # print("\nSTDEDGEP = " + standardDeviationEDGEP)
-        # print("\nCOV = " + covariance)
-        divisor = (standardDeviationEDGEP * standardDeviationTOPO)
-        self.socor = covariance/divisor if divisor > 0 else 0
-        socorI = self.socor
-        if (socorI != None):
-            self.socorWriter.write("" + str(self.socor))
-        else:
-            self.socorWriter.write("Impossible to calculate socor, there is no correlation.")
- 
- 
+        with open(self.metricFiles["SOCOR"], "w+") as saida:
+            self.socor = 0
+            standardDeviationTOPO = self.calculateStandardDeviation(self.topo)
+            standardDeviationEDGEP = self.calculateStandardDeviation(self.edgep)
+            covariance = self.calculateCovariance()
+            divisor = (standardDeviationEDGEP * standardDeviationTOPO)
+            self.socor = covariance/divisor if divisor > 0 else 0
+            if(self.socor > 0):
+                saida.write("{}\n".format(self.socor))
+            else:
+                saida.write("There is no correlation.\n")
+     
+     
     def trim(self, fileName):
         i = len(fileName) - 1
         while (fileName[i] != '\\' and i >= 0):
