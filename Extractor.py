@@ -75,7 +75,7 @@ class Extractor:
 
     def extractMetrics(self,metrics,line):
         functions = {"INCO": self.extractINCO, "CODU": self.extractCODU, "MAXCON": self.extractMAXCON, "EDGEP": self.extractEDGEP,
-                     "TOPO": self.extractTOPO, "Home": self.extractHome, "TRVD": self.extractTRVD, "RADG": self.extractRADG}
+                     "TOPO": self.extractTOPO, "TRVD": self.extractTRVD, "RADG": self.extractRADG}
         for m in metrics:
             if m in functions:
                 functions[m](line)
@@ -83,9 +83,16 @@ class Extractor:
     def extract(self):
  
         self.voronoi()
-        #self.extractVenues()
+        self.extractVenues()
+        bar = Bar(self.filesize,"Extracting homes")
+        with open(self.file, "r") as entrada:
+            for line in entrada:
+                line = line.strip()
+                self.extractHome(line)
+                bar.progress()
+        bar.finish()
 
-        bar = Bar(self.filesize/2,"Extracting INCO, CODU, MAXCON and EDGEP")
+        bar = Bar(self.filesize,"Extracting INCO, CODU, MAXCON and EDGEP")
         with open(self.file, "r") as entrada:
             for line in entrada:
                 line = line.strip()
@@ -118,8 +125,11 @@ class Extractor:
                 for t in neighborsTarget:
                     if t in neighborsSource:
                         to += 1
-
-                toPct = (float(to) / ((degreeSrc - edgeExists) + (degreeDest - edgeExists) - to))
+                numerator = float(to)+1
+                denominator = ((degreeSrc - edgeExists) + (degreeDest - edgeExists) - to)+1
+                if denominator == 0:
+                    denominator = 1
+                toPct = numerator / denominator
                 self.topo[encounter.toString()] = toPct
             bar.finish()
         
@@ -134,7 +144,10 @@ class Extractor:
     def normalizeEDGEP(self):
         keys = self.edgep.keys()
         for key in keys:
-            self.edgep[key] =  self.edgep[key] / (math.floor((self.maxTime / 86400)))
+            denominator = (math.floor((self.maxTime / 86400)))
+            if denominator == 0:
+                denominator = 1
+            self.edgep[key] =  self.edgep[key] / denominator
  
     def printMAXCON(self):
         with open(self.metricFiles["MAXCON"], 'w') as saida:
@@ -321,10 +334,10 @@ class Extractor:
         numberVenues = 835
 
 
-        _set = self.locations.keys()
+        _set = list(self.locations.keys())
         randomIndex = 0
         venuesIndex = 0
- 
+        bar = Bar(numberVenues,"Extracting venues")
         for i in range (0,numberVenues):
             randomIndex = random.randint(0, len(_set))
             try:
@@ -336,6 +349,8 @@ class Extractor:
                 randomIndex -= 1
             self.venues[venuesIndex] = _set[randomIndex]
             venuesIndex += 1
+            bar.progress()
+        bar.finish()
  
  
     '''
@@ -345,7 +360,7 @@ class Extractor:
     '''
 
     def getClosestVenue(self, x, y):
-        _set = self.venues.keys()
+        _set = list(self.venues.keys())
         minimum_distance = sys.float_info.max
         closest_venue = 0
  
@@ -355,7 +370,7 @@ class Extractor:
             if (distance < minimum_distance):
                 minimum_distance = distance
                 closest_venue = _set[i]
- 
+        #print("***************************************Tamanho do venues: " + str(len(self.venues)) + "******************************************")
         return self.venues[closest_venue]
  
     # Example of line in MOCHA parsed trace:
@@ -368,8 +383,7 @@ class Extractor:
     line (String): line to be parsed return
     '''
     
-    def extractHome(self, line):
-        """       
+    def extractHome(self, line):    
         components = line.strip().split(" ")
         firstUserLocation = self.getClosestVenue(components[5], components[6])
         firstUser = components[0]
@@ -412,7 +426,7 @@ class Extractor:
         else:
             self.userHomes[secondUser] = Home(secondUserLocation, 1)
 
-        """
+        
     
 
     '''
@@ -423,7 +437,7 @@ class Extractor:
         components = line.strip().split(" ")
         firstUser = components[0]
         secondUser = components[1]
- 
+        ##print(self.userHomes)
         firstUserHome = self.userHomes[firstUser].location
         secondUserHome = self.userHomes[secondUser].location
  
@@ -479,7 +493,7 @@ class Extractor:
             for line in _lines:
                 self.extractLocations(line)
                 split = line.strip().split(" ") # Changed this from \t to space
-     
+                #print(split)
                 user1 = int(split[0])
                 user1X = float(split[5])
                 user1Y = float(split[6])

@@ -16,11 +16,17 @@ class Parser:
         self.maxY = 0
         self.maxT = 0
         self.filesize = 0
+        self.parsedfilesize = 0
  
     def parseSwim(self, filename):
-        self.collectMaxesSwim(filename)
 
-        with open(self.generateFileName(filename),'w') as out:
+        #print("*****filename: " + filename + "*****")
+
+
+        self.collectMaxesSwim(filename)
+        newFile = self.generateFileName(filename)
+        #print("*****newfile: " + newFile + "*****")
+        with open(newFile, 'w') as out:
             encounters = {}
             bar = Bar(self.filesize, "Parsing SWIM file")
             with open(filename, 'r') as entrada:
@@ -35,10 +41,11 @@ class Parser:
                     
                     if encounter.toString() in encounters:
                         e = encounters[encounter.toString()]
+                        self.parsedfilesize+=1
                         out.write("{} {} {} {} {} {} {} {} {}\n".format(components[2],components[3],components[0],e,(float(components[0])-e),components[4],components[5],components[6],components[7]))
                     encounters[encounter.toString()] = float(components[0])
         bar.finish()
-        return filename
+        return newFile
  
     def removeEmpty(self, components):
         return [c for c in components if c != ""]
