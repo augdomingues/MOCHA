@@ -1,4 +1,5 @@
 from ConfigurationParameters import ConfigurationParameters
+from radar_chart import Visualization
 from Parser import Parser
 from Extractor import Extractor
 from Classifier import Classifier
@@ -28,10 +29,11 @@ class Principal:
             print("|  ,-\___/-.                                                               |")
             print("|  `-------'                                                               |")
             print("|                                                                          |")
-            print("| Usage: Principal.py ['-p', '-e', '-pe'] ['-r', '-s', '-n'] filename      |")
+            print("| Usage: Principal.py ['-p', '-e', '-pe'] ['-r', '-s', '-n'] -v filename   |")
             print("|                                                                          |")
             print("| ['-p', '-e', '-pe']: parse, extract, or parse and extract                |")
             print("| ['-r', '-s', '-n' ]: RAW, SWIM or NS2 (if parsing)                       |")
+            print("| -v                 : Visualize the trace                                 |")
             print("| filename        : file to be parsed/processed                            |")
             print("|                                                                          |")
             print("+--------------------------------------------------------------------------+")
@@ -74,6 +76,9 @@ class Principal:
                 extractor.extract()
                 classifier = Classifier(newFile)
                 classifier.classify()
+
+            v = Visualization(self.metrics)
+            v.plot()
                 
     def readMetrics(self):
         if not os.path.exists("metrics.data"):
