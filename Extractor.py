@@ -7,7 +7,7 @@ import math
 import random
 import os
 from Bar import Bar
-
+import pdb
 class Home:
     def __init__(self, l, d):
         self.location = l
@@ -28,7 +28,9 @@ class Extractor:
         
         # Checks if system is windows to create folder correctly
         self.barra = "\\" if os.name == 'nt' else "/"
+        #print("*****FILENAME: " + filename + "******")
         self.folderName = filename.split(".")[0].replace("_parsed", "") + "_metrics_folder{}".format(self.barra)
+        #print("O nome do arquivo eh " + filename)
         self.file, self.filesize = filename, filesize
         self.generatedFileNames = {}
         self.maxX, self.maxY, self.r, self.maxTime = maxX, maxY, r, maxTime
@@ -53,7 +55,7 @@ class Extractor:
         self.radius = {}
         self.trvd = {}
         self.vist = {}
-
+        #pdb.set_trace()
         if not os.path.exists(self.folderName):
             os.makedirs(self.folderName)
         with open("filesForFitting.txt", "w+") as fitting:
@@ -81,10 +83,12 @@ class Extractor:
                 functions[m](line)
  
     def extract(self):
- 
+        #print("******Vou executar o voronoi*****")
         self.voronoi()
+        #print("******Executei o voronoi*****")
+        #print("******Vou executar o venues*****")
         self.extractVenues()
-        bar = Bar(self.filesize,"Extracting homes")
+        bar = Bar(self.filesize/2,"Extracting homes")
         with open(self.file, "r") as entrada:
             for line in entrada:
                 line = line.strip()
@@ -92,7 +96,7 @@ class Extractor:
                 bar.progress()
         bar.finish()
 
-        bar = Bar(self.filesize,"Extracting INCO, CODU, MAXCON and EDGEP")
+        bar = Bar(self.filesize/2,"Extracting INCO, CODU, MAXCON and EDGEP")
         with open(self.file, "r") as entrada:
             for line in entrada:
                 line = line.strip()
@@ -317,6 +321,8 @@ class Extractor:
  
     def extractLocations(self, line):
         split = line.strip().split(" ")
+        #print("*****O que tinha no split era*****")
+        #print(split)
         try:
             aux = self.locations[split[5] + " " + split[6]]
         except:
@@ -335,6 +341,7 @@ class Extractor:
 
 
         _set = list(self.locations.keys())
+        #print("*********** O tamanho do set eh: "  + str(len(_set)) + "***********")
         randomIndex = 0
         venuesIndex = 0
         bar = Bar(numberVenues,"Extracting venues")
@@ -488,9 +495,12 @@ class Extractor:
         # TODO Verificar a geracao do nome
         # BufferedWriter out = new BufferedWriter(new FileWriter(new
         # File("saida.txt")));
-        with open(self.file) as inn:
-            _lines = inn. readlines()
-            for line in _lines:
+        
+        with open(self.file, 'r') as inn:
+            #print("No voronoi o file e: " + self.file)
+            _lines = inn.readlines()
+            for line in _lines: 
+                #print("*****Vou executar o locations e o index eh:" + self.locationsIndex)
                 self.extractLocations(line)
                 split = line.strip().split(" ") # Changed this from \t to space
                 #print(split)
