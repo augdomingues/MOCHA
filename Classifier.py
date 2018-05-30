@@ -25,9 +25,9 @@ class Classifier:
         best_sse = np.inf
 
         if "/" in filename:
-            metric = filename.split("/")[1]
+            metric = filename.split("/")[-1]
         elif "\\" in filename:
-            metric = filename.split("\\")[1]
+            metric = filename.split("\\")[-1]
         else:
             metric = filename
         
@@ -82,9 +82,9 @@ class Classifier:
                         continue
                     name,params = self.best_fit_distribution(data,line)
                     if "/" in line:
-                        metricName = line.split("/")[1].replace(".txt", "")
+                        metricName = line.split("/")[-1].replace(".txt", "")
                     elif "\\" in line:
-                        metricName = line.split("\\")[1].replace(".txt", "")
+                        metricName = line.split("\\")[-1].replace(".txt", "")
                     saida.write("{},{},{}\n".format(metricName,name,params))
                     self.metrics[metricName] = (name,params)
         return self.metrics

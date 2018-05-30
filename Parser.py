@@ -7,6 +7,7 @@ from Graph import Graph
 from Graph import Vertex
 from User import User
 from Bar import Bar
+import pdb
 
 class Parser:
  
@@ -16,11 +17,17 @@ class Parser:
         self.maxY = 0
         self.maxT = 0
         self.filesize = 0
+        self.parsedfilesize = 0
  
     def parseSwim(self, filename):
-        self.collectMaxesSwim(filename)
 
-        with open(self.generateFileName(filename),'w') as out:
+        #print("*****filename: " + filename + "*****")
+
+
+        self.collectMaxesSwim(filename)
+        newFile = self.generateFileName(filename)
+        #print("*****newfile: " + newFile + "*****")
+        with open(newFile, 'w') as out:
             encounters = {}
             bar = Bar(self.filesize, "Parsing SWIM file")
             with open(filename, 'r') as entrada:
@@ -35,10 +42,11 @@ class Parser:
                     
                     if encounter.toString() in encounters:
                         e = encounters[encounter.toString()]
+                        self.parsedfilesize+=1
                         out.write("{} {} {} {} {} {} {} {} {}\n".format(components[2],components[3],components[0],e,(float(components[0])-e),components[4],components[5],components[6],components[7]))
                     encounters[encounter.toString()] = float(components[0])
         bar.finish()
-        return filename
+        return newFile
  
     def removeEmpty(self, components):
         return [c for c in components if c != ""]
@@ -134,10 +142,10 @@ class Parser:
                     time = float(components[3])
                     
                     user = User(_id, positionX, positionY)
-         
+                    
                     try:
                         entry = positionDictionary[user.toString()]
-         
+                        
                         if (entry.positionX != positionX or entry.positionY != positionY):
          
                             # The node moved
@@ -150,7 +158,7 @@ class Parser:
                             oldUser = User(_id, entry.positionX, entry.positionY)
                              
                             adjacent = self.getAdjacentCellUsers(cells, oldUser, self.r)
-         
+                            
                             newCell = Cell(coordX, coordY)
                             try:
                                 usersInCell = cells[newCell.toString()]
@@ -162,7 +170,7 @@ class Parser:
                                 cells[newCell.toString()] = usersInCell
                              
                             for user2 in adjacent:
-                                if euclidean(user.x, user.y, user2.x, user2.y) <= self.r:
+                                if self.euclidean(user.x, user.y, user2.x, user2.y) <= self.r:
                                     vert1 = g.get_vertex(user.toString())
                                     conected = False
 
@@ -170,10 +178,12 @@ class Parser:
                                         if vert2.get_id() == user2.toString():
                                             conected = True
                                             g.add_edge(user.toString(), user2.toString(), time)
+                                            g.add_edge(user2.toString(), user.toString(), time)
                                             break
                                     
                                     if not conected:
                                         g.add_edge(user.toString(), user2.toString(), time)
+                                        g.add_edge(user2.toString(), user.toString(), time)
                                         encounter = Encounter(int(user.toString()), int(user2.toString()))
                                         beginingPositions[encounter.toString()] = str(user.x) + " " + str(user.y) + " " + str(user2.x) + " " + str(user2.y)
                                 elif (g.containsEdge(user.toString(), user2.toString())):
@@ -217,11 +227,13 @@ class Parser:
                                 usersInCell = cells[newCell.toString()]
                                 for user2 in usersInCell:
                                     if (user.toString() != user2.toString()):
-                                        if euclidean(user.x, user.y, user2.x, user2.y) <= self.r:
+                                        if self.euclidean(user.x, user.y, user2.x, user2.y) <= self.r:
                                             if (g.containsEdge(user.toString(), user2.toString())):
                                                 g.add_edge(user.toString(), user2.toString(), time)
+                                                g.add_edge(user2.toString(), user.toString(), time)
                                             else:
                                                 g.add_edge(user.toString(), user2.toString(), time)
+                                                g.add_edge(user2.toString(), user.toString(), time)
                                                 encounter = Encounter(int(user.toString()), int(user2.toString()))
                                                 beginingPositions[encounter.toString()] = str(user.x) + " " + str(user.y) + " " + str(user2.x) + " " + str(user2.y)
                                         elif (g.containsEdge(user.toString(), user2.toString())):
@@ -242,7 +254,7 @@ class Parser:
 
         self.filesize = newLines
         bar.finish()
-        #return self.generateFileName(filename)
+        return self.generateFileName(filename)
  
     def removeUserFromCell(self, usersInCell, id):
 
@@ -291,7 +303,7 @@ class Parser:
                     usersInCell = cells[newCell.toString()]
                     for user2 in usersInCell:
                         if (user.toString() != user2.toString()):
-                            if euclidean(user.x, user.y, user2.x, user2.y) <= r:
+                            if self.euclidean(user.x, user.y, user2.x, user2.y) <= r:
                                 adjacent.append(user2)
                 rangeYBegin += 1
             rangeXBegin += 1

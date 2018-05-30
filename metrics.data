@@ -1,10 +1,10 @@
 # Use a # to ignore a metric
 INCO
 CODU
-#SOCOR
+SOCOR
 EDGEP
-#TOPO
+TOPO
 #MAXCON
-#RADG
-#VIST
-#TRVD
+RADG
+VIST
+TRVD

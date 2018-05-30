@@ -1,5 +1,4 @@
 from ConfigurationParameters import ConfigurationParameters
-from radar_chart import Visualization
 from Parser import Parser
 from Extractor import Extractor
 from Classifier import Classifier
@@ -29,11 +28,10 @@ class Principal:
             print("|  ,-\___/-.                                                               |")
             print("|  `-------'                                                               |")
             print("|                                                                          |")
-            print("| Usage: Principal.py ['-p', '-e', '-pe'] ['-r', '-s', '-n'] -v filename   |")
+            print("| Usage: Principal.py ['-p', '-e', '-pe'] ['-r', '-s', '-n'] filename      |")
             print("|                                                                          |")
             print("| ['-p', '-e', '-pe']: parse, extract, or parse and extract                |")
             print("| ['-r', '-s', '-n' ]: RAW, SWIM or NS2 (if parsing)                       |")
-            print("| -v                 : Visualize the trace                                 |")
             print("| filename        : file to be parsed/processed                            |")
             print("|                                                                          |")
             print("+--------------------------------------------------------------------------+")
@@ -72,13 +70,13 @@ class Principal:
                 elif args[1] == "-n":      
                     newFile = parser.parseNS2(args[2])
                 
-                extractor = Extractor(newFile, parser.maxT, parser.maxX, parser.maxY, self.configurationParameters.communicationRadius, parser.filesize)
+                extractor = Extractor(newFile, parser.maxT, parser.maxX, parser.maxY, self.configurationParameters.communicationRadius, parser.parsedfilesize, self.metrics)
                 extractor.extract()
+
+                print("******************************* O nome que ofi pro class e: " + newFile + "***********************************")
+
                 classifier = Classifier(newFile)
                 classifier.classify()
-
-            v = Visualization(self.metrics)
-            v.plot()
                 
     def readMetrics(self):
         if not os.path.exists("metrics.data"):
