@@ -26,7 +26,7 @@ class Location:
 
 class Extractor:
 
-    def __init__(self, filename, maxTime, maxX, maxY, r, filesize, metrics):
+    def __init__(self, filename, maxTime, maxX, maxY, r, filesize, metrics, report_id):
 
         # Checks if system is windows to create folder correctly
         self.barra = "\\" if os.name == 'nt' else "/"
@@ -53,11 +53,12 @@ class Extractor:
         self.locationsIndex = 0
         self.venues = {}
         self.usersVenues = {}
+        self.usersContacts = {}
         self.userHomes = {}
         self.radius = {}
         self.trvd = {}
         self.vist = {}
-        self.REPORT_ID = False
+        self.REPORT_ID = report_id
         #pdb.set_trace()
         if not os.path.exists(self.folderName):
             os.makedirs(self.folderName)
@@ -72,7 +73,7 @@ class Extractor:
 
     def printMetrics(self,metrics):
         functions = {"EDGEP": self.printEDGEP, "TOPO": self.printTOPO, "RADG": self.printRADG, "TRVD": self.printTRVD, "VIST": self.printVIST,
-                "MAXCON": self.printMAXCON, "SPAV": self.printSPAV}
+                "MAXCON": self.printMAXCON, "SPAV": self.printSPAV, "CONEN": self.printCONEN}
 
         for m in metrics:
             if m in functions:
@@ -89,7 +90,7 @@ class Extractor:
         self.extractLocations()
         self.extractVenues()
         self.voronoi()
-        bar = Bar(self.filesize/2,"Extracting homes")
+        bar = Bar(self.filesize,"Extracting homes")
         with open(self.file, "r") as entrada:
             for line in entrada:
                 line = line.strip()
@@ -97,7 +98,7 @@ class Extractor:
                 bar.progress()
         bar.finish()
 
-        bar = Bar(self.filesize/2,"Extracting INCO, CODU, MAXCON and EDGEP")
+        bar = Bar(self.filesize,"Extracting INCO, CODU, MAXCON and EDGEP")
         with open(self.file, "r") as entrada:
             for line in entrada:
                 line = line.strip()
@@ -179,13 +180,25 @@ class Extractor:
                 else:
                     saida.write("{}\n".format(item))
 
+    def printCONEN(self):
+        with open(self.metricFiles["CONEN"],'w') as saida:
+            for key,item in self.usersContacts.items():
+                summ = sum([v for v in item.values()])
+                summ = max(summ,1)
+                entropy = 0
+                entropy = sum([(v/summ) * math.log2((1/(v/summ))) for v in item.values()])
+                if self.REPORT_ID:
+                    saida.write("{},{}\n".format(key,entropy))
+                else:
+                    saida.write("{}\n".format(entropy))
+
     def printSPAV(self):
         with open(self.metricFiles["SPAV"], 'w') as saida:
             for key,item in self.usersVenues.items():
                 summ = sum([v for v in item.values()])
                 summ = max(summ,1)
                 entropy = 0
-                entropy = sum([(v/summ) * math.log2((1/(v/sum))) for v in item.values()]) * -1
+                entropy = sum([(v/summ) * math.log2((1/(v/summ))) for v in item.values()])
                 if self.REPORT_ID:
                     saida.write("{},{}\n".format(key,entropy))
                 else:
@@ -516,9 +529,10 @@ class Extractor:
         # TODO Verificar a geracao do nome
         # BufferedWriter out = new BufferedWriter(new FileWriter(new
         # File("saida.txt")));
-
+        if "SPAV" not in self.metrics and "VIST" not in self.metrics and "CONEN" not in self.metrics:
+            return
         with open(self.file, 'r') as entrada:
-            bar = Bar(self.filesize/2,"Extracting SPAV and VIST")
+            bar = Bar(self.filesize/2,"Extracting SPAV, CONEN and VIST")
             for line in entrada: 
         #        self.extractLocations(line)
                 split = line.strip().split(" ") # Changed this from \t to space
@@ -528,65 +542,66 @@ class Extractor:
                 user2, user2X, user2Y = split[1], float(split[7]), float(split[8])
 
                 time = float(split[4])
+                
+                if "CONEN" in self.metrics:
+                    if user1 in self.usersContacts:
+                        current_value = self.usersContacts[user1].get(user2,0)
+                        self.usersContacts[user1][user2] = current_value + 1
+                    else:
+                        self.usersContacts[user1] = {}
+                    if user2 in self.usersContacts:
+                        current_value = self.usersContacts[user2].get(user1,0)
+                        self.usersContacts[user2][user1] = current_value + 1
+                    else:
+                        self.usersContacts[user2] = {}
 
                 distanceToCloser1 = distanceToCloser2 = sys.float_info.max
                 user1Venue = user2Venue =  0
 
-                for i in range (0, len(self.venues)):
+                if "SPAV" in self.metrics or "VIST" in self.metrics:
+                    for i in range (0, len(self.venues)):
 
-                    splitVenues = [float(c) for c in self.venues[i].split(" ")]
-                    distance = self.euclideanDistance(user1X, user1Y, splitVenues[0], splitVenues[1])
-                    if (distance < distanceToCloser1):
-                        distanceToCloser1 = distance
-                        user1Venue = i
+                        splitVenues = [float(c) for c in self.venues[i].split(" ")]
+                        distance = self.euclideanDistance(user1X, user1Y, splitVenues[0], splitVenues[1])
+                        if (distance < distanceToCloser1):
+                            distanceToCloser1 = distance
+                            user1Venue = i
 
-                    distance = self.euclideanDistance(user2X, user2Y, splitVenues[0], splitVenues[1])
-                    if (distance < distanceToCloser2):
-                        distanceToCloser2 = distance
-                        user2Venue = i
+                        distance = self.euclideanDistance(user2X, user2Y, splitVenues[0], splitVenues[1])
+                        if (distance < distanceToCloser2):
+                            distanceToCloser2 = distance
+                            user2Venue = i
 
-                if user1 in self.usersVenues:
-                    current_value = self.usersVenues[user1].get(user1Venue,0)
-                    self.usersVenues[user1][user1Venue] = current_value + 1
-                else:
-                    self.usersVenues[user1] = {}
+                if "SPAV" in self.metrics:
+                    if user1 in self.usersVenues:
+                        current_value = self.usersVenues[user1].get(user1Venue,0)
+                        self.usersVenues[user1][user1Venue] = current_value + 1
+                    else:
+                        self.usersVenues[user1] = {}
 
-                if user2 in self.usersVenues:
-                    current_value = self.usersVenues[user2].get(user2Venue,0)
-                    self.usersVenues[user2][user2Venue] = current_value + 1
-                else:
-                    self.usersVenues[user2] = {}
-
-                #self.usersVenues[user1] = user1Venue
-                #self.usersVenues[user2] = user2Venue
-                #try:
-                #    if (self.usersVenues[user1] != user1Venue):
-                #        self.usersVenues[user1] = user1Venue
-                #except:
-                #    self.usersVenues[user1] = user1Venue
-
-                #try:
-                #    if (self.usersVenues[user2] != user2Venue):
-                #        self.usersVenues[user2] = user2Venue
-                #except:
-                #    self.usersVenues[user2] = user2Venue
+                    if user2 in self.usersVenues:
+                        current_value = self.usersVenues[user2].get(user2Venue,0)
+                        self.usersVenues[user2][user2Venue] = current_value + 1
+                    else:
+                        self.usersVenues[user2] = {}
 
 
-                # Extracts Visit Time for user 1
-                # TODO Verificar com Fabricio se o else tem ' + time ' ou nao
-                if (user1 in self.vist):
-                    visitTime = self.vist[user1].get(user1Venue,0.0)
-                    self.vist[user1][user1Venue] = visitTime + time
-                else:
-                    self.vist[user1] = {}
+                if "VIST" in self.metrics:
+                    # Extracts Visit Time for user 1
+                    # TODO Verificar com Fabricio se o else tem ' + time ' ou nao
+                    if (user1 in self.vist):
+                        visitTime = self.vist[user1].get(user1Venue,0.0)
+                        self.vist[user1][user1Venue] = visitTime + time
+                    else:
+                        self.vist[user1] = {}
 
-                # Extracts Visit Time for user 2
-                # TODO Verificar com Fabricio se o else tem ' + time ' ou nao
-                if (user2 in self.vist):
-                    visitTime = self.vist[user2].get(user2Venue,0.0)
-                    self.vist[user2][user1Venue] = visitTime + time
-                else:
-                    self.vist[user2] = {}
+                    # Extracts Visit Time for user 2
+                    # TODO Verificar com Fabricio se o else tem ' + time ' ou nao
+                    if (user2 in self.vist):
+                        visitTime = self.vist[user2].get(user2Venue,0.0)
+                        self.vist[user2][user1Venue] = visitTime + time
+                    else:
+                        self.vist[user2] = {}
 
                 bar.progress()
         bar.finish()
