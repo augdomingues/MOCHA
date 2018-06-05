@@ -82,7 +82,7 @@ class Principal:
         if not os.path.exists("metrics.data"):
             with open("metrics.data", "w+") as entrada:
                 entrada.write("# Use a # to ignore a metric\n")
-                entrada.write("INCO\nCODU\nSOCOR\nEDGEP\nTOPO\nRADG\nVIST\nTRVD")
+                entrada.write("INCO\nCODU\nSOCOR\nEDGEP\nTOPO\nRADG\nVIST\nTRVD\nSPAV")
         with open("metrics.data", "r") as entrada:
             for line in entrada:
                 line = line.strip().replace(" ", "")

@@ -8,6 +8,7 @@ import random
 import os
 from Bar import Bar
 import pdb
+
 class Home:
     def __init__(self, l, d):
         self.location = l
@@ -24,8 +25,9 @@ class Location:
         self.visitTime = vt
 
 class Extractor:
+
     def __init__(self, filename, maxTime, maxX, maxY, r, filesize, metrics):
-        
+
         # Checks if system is windows to create folder correctly
         self.barra = "\\" if os.name == 'nt' else "/"
         #print("*****FILENAME: " + filename + "******")
@@ -55,6 +57,7 @@ class Extractor:
         self.radius = {}
         self.trvd = {}
         self.vist = {}
+        self.REPORT_ID = False
         #pdb.set_trace()
         if not os.path.exists(self.folderName):
             os.makedirs(self.folderName)
@@ -69,7 +72,7 @@ class Extractor:
 
     def printMetrics(self,metrics):
         functions = {"EDGEP": self.printEDGEP, "TOPO": self.printTOPO, "RADG": self.printRADG, "TRVD": self.printTRVD, "VIST": self.printVIST,
-                     "MAXCON": self.printMAXCON}
+                "MAXCON": self.printMAXCON, "SPAV": self.printSPAV}
 
         for m in metrics:
             if m in functions:
@@ -81,13 +84,11 @@ class Extractor:
         for m in metrics:
             if m in functions:
                 functions[m](line)
- 
+
     def extract(self):
-        #print("******Vou executar o voronoi*****")
-        self.voronoi()
-        #print("******Executei o voronoi*****")
-        #print("******Vou executar o venues*****")
+        self.extractLocations()
         self.extractVenues()
+        self.voronoi()
         bar = Bar(self.filesize/2,"Extracting homes")
         with open(self.file, "r") as entrada:
             for line in entrada:
@@ -104,7 +105,7 @@ class Extractor:
                 self.extractMetrics(self.metrics,line)#, "Home", "TRVD", "RADG"],line)
         edges = self.topoGraph.edgeSet()
         bar.finish()
-        
+
         if "TOPO" in self.metrics:
             bar = Bar(len(edges),"Extracting TOPO and SOCOR")
             for edge in edges:
@@ -152,6 +153,7 @@ class Extractor:
             if denominator == 0:
                 denominator = 1
             self.edgep[key] =  self.edgep[key] / denominator
+
  
     def printMAXCON(self):
         with open(self.metricFiles["MAXCON"], 'w') as saida:
@@ -164,12 +166,31 @@ class Extractor:
             for key,item in self.trvd.items():
                 totalDistance = sum([t.distance for t in item])
                 totalDistance = totalDistance/len(item) if len(item) > 0 else 0.0
-                saida.write("{}\n".format(totalDistance))
+                if self.REPORT_ID:
+                    saida.write("{},{}\n".format(key,totalDistance))
+                else:
+                    saida.write("{}\n".format(totalDistance))
 
     def printRADG(self):
         with open(self.metricFiles["RADG"], 'w') as saida:
             for key,item in self.radius.items():
-                saida.write("{}\n".format(item))
+                if self.REPORT_ID:
+                    saida.write("{},{}\n".format(key,item))
+                else:
+                    saida.write("{}\n".format(item))
+
+    def printSPAV(self):
+        with open(self.metricFiles["SPAV"], 'w') as saida:
+            for key,item in self.usersVenues.items():
+                summ = sum([v for v in item.values()])
+                summ = max(summ,1)
+                entropy = 0
+                entropy = sum([(v/summ) * math.log2((1/(v/sum))) for v in item.values()]) * -1
+                if self.REPORT_ID:
+                    saida.write("{},{}\n".format(key,entropy))
+                else:
+                    saida.write("{}\n".format(entropy))
+
 
     def printVIST(self):
         with open(self.metricFiles["VIST"], 'w') as saida:
@@ -181,12 +202,18 @@ class Extractor:
     def printEDGEP(self):
         with open(self.metricFiles["EDGEP"], 'w') as saida:
             for key,item in self.edgep.items():
-                saida.write("{}\n".format(item))
+                if self.REPORT_ID:
+                    saida.write("{},{},{}\n".format(key.split(" ")[0],key.split(" ")[1],item))
+                else:
+                    saida.write("{}\n".format(item))
     
     def printTOPO(self):
         with open(self.metricFiles["TOPO"],'w') as saida:
             for key,item in self.topo.items():
-                saida.write("{}\n".format(item))
+                if self.REPORT_ID:
+                    saida.write("{},{},{}\n".format(key.split(" ")[0],key.split(" ")[1],item))
+                else:
+                    saida.write("{}\n".format(item))
  
     # TODO: delete file if it exits in the beginnning
     def extractINCO(self, line):
@@ -217,9 +244,13 @@ class Extractor:
     def extractCODU(self, line):
         with open(self.metricFiles["CODU"],'a') as saida:
             components = line.strip().split(" ")
+            user1,user2 = components[0],components[1]
             timeI = float(components[3])
             timeF = float(components[2])
-            saida.write("{}\n".format(timeF - timeI))
+            if self.REPORT_ID:
+                saida.write("{},{},{}\n".format(user1,user2,timeF - timeI))
+            else:
+                saida.write("{}\n".format(timeF - timeI))
  
     def extractMAXCON(self, line):
         components = line.strip().split(" ")
@@ -300,16 +331,16 @@ class Extractor:
         return covariance
     
     #TODO: Replace by numpy calculation
-    def calculateStandardDeviation(self, map):
+    def calculateStandardDeviation(self, values):
         standardDeviation = 0
-        mean = self.calculateMean(map)
+        mean = self.calculateMean(values)
  
-        keys = map.keys()
+        keys = values.keys()
         
         if len(keys) - 1 > 0:
             for key in keys:    
-                if (map[key] != None):
-                    standardDeviation += (map[key] - mean) ** 2
+                if (values[key] != None):
+                    standardDeviation += (values[key] - mean) ** 2
             standardDeviation /= (len(keys) - 1)
  
         return math.sqrt(standardDeviation)
@@ -319,21 +350,22 @@ class Extractor:
         mean = sum(valid_values) / max(len(valid_values),1)
         return mean
  
-    def extractLocations(self, line):
-        split = line.strip().split(" ")
-        #print("*****O que tinha no split era*****")
-        #print(split)
-        try:
-            aux = self.locations[split[5] + " " + split[6]]
-        except:
-            self.locations[split[5] + " " + split[6]] = self.locationsIndex
-            self.locationsIndex += 1
- 
-        try:
-            aux = self.locations[split[7] + " " + split[8]]
-        except:
-            self.locations[split[7] + " " + split[8]] = self.locationsIndex
-            self.locationsIndex += 1
+    def extractLocations(self):
+        bar = Bar(self.filesize/2,"Extracting locations")
+        with open(self.file, 'r') as entrada:
+            for line in entrada:
+                split = line.strip().split(" ")
+                key = "{} {}".format(split[5],split[6])
+                if key not in self.locations:
+                    self.locations[key] = self.locationsIndex
+                    self.locationsIndex += 1
+
+                key = "{} {}".format(split[7],split[8])
+                if key not in self.locations:
+                    self.locations[key] = self.locationsIndex
+                    self.locationsIndex += 1
+                bar.progress()
+        bar.finish()
  
     def extractVenues(self):
         numberVenues = int(self.maxX * self.maxY / (self.r * self.r))
@@ -373,7 +405,7 @@ class Extractor:
  
         for i in range (0, len(_set)):
             venue_location = self.venues[_set[i]].split(" ")
-            distance = self.euclideanDistance(float(x), float(y), float(venue_location[0]), float(venue_location[1]))
+            distance = self.euclideanDistance(x,y,venue_location[0], venue_location[1])
             if (distance < minimum_distance):
                 minimum_distance = distance
                 closest_venue = _set[i]
@@ -442,36 +474,25 @@ class Extractor:
     '''
     def extractRADG(self, line):
         components = line.strip().split(" ")
-        firstUser = components[0]
-        secondUser = components[1]
-        ##print(self.userHomes)
+        firstUser, secondUser = components[0], components[1]
+        
         firstUserHome = self.userHomes[firstUser].location
         secondUserHome = self.userHomes[secondUser].location
  
-        firstUserDistance = self.euclideanDistance(float(components[5]), float(components[6]), float(firstUserHome.split(" ")[0]), float(firstUserHome.split(" ")[1]))
-        secondUserDistance = self.euclideanDistance(float(components[7]), float(components[8]), float(secondUserHome.split(" ")[0]), float(secondUserHome.split(" ")[1]))
+        firstUserDistance = self.euclideanDistance(components[5], components[6], firstUserHome.split(" ")[0], firstUserHome.split(" ")[1])
+        secondUserDistance = self.euclideanDistance(components[7], components[8], secondUserHome.split(" ")[0], secondUserHome.split(" ")[1])
  
-        # Checks if lastly extracted radius is bigger than stored user radius
-        if (firstUser in self.radius):
-            if (self.radius[firstUser] < firstUserDistance):
-                self.radius[firstUser] = firstUserDistance
-        else:
-            self.radius[firstUser] = firstUserDistance
- 
-        if (secondUser in self.radius):
-            if (self.radius[secondUser] < secondUserDistance):
-                self.radius[secondUser] = secondUserDistance
-        else:
-            self.radius[secondUser] = secondUserDistance
+        # Checks if lastly extracted radius is bigger than stored user radius (if none is stored, then lastly is added as bigger)
+        self.radius[firstUser] = max(self.radius[firstUser],firstUserDistance) if firstUser in self.radius else firstUserDistance
+        self.radius[secondUser] = max(self.radius[secondUser],firstUserDistance) if secondUser in self.radius else secondUserDistance
  
     def extractTRVD(self, line):
         components = line.strip().split(" ")
-        firstUser = components[0]
-        secondUser = components[1]
+        firstUser, secondUser = components[0], components[1]
  
         if (firstUser in self.trvd):
             lastPosition = self.trvd[firstUser][-1].location
-            distance = self.euclideanDistance(float(components[5]), float(components[6]), float(lastPosition.split(" ")[0]), float(lastPosition.split(" ")[1]))
+            distance = self.euclideanDistance(components[5], components[6], lastPosition.split(" ")[0], lastPosition.split(" ")[1])
             userList = self.trvd[firstUser]
             userList.append(TravelPair(components[5] + " " + components[6], distance))
             self.trvd[firstUser] = userList
@@ -482,7 +503,7 @@ class Extractor:
  
         if (secondUser in self.trvd):
             lastPosition = self.trvd[secondUser][-1].location
-            distance = self.euclideanDistance(float(components[7]), float(components[8]), float(lastPosition.split(" ")[0]), float(lastPosition.split(" ")[1]))
+            distance = self.euclideanDistance(components[7], components[8], lastPosition.split(" ")[0], lastPosition.split(" ")[1])
             userList = self.trvd[secondUser]
             userList.append(TravelPair(components[7] + " " + components[8], distance))
             self.trvd[secondUser] = userList
@@ -495,85 +516,91 @@ class Extractor:
         # TODO Verificar a geracao do nome
         # BufferedWriter out = new BufferedWriter(new FileWriter(new
         # File("saida.txt")));
-        
-        with open(self.file, 'r') as inn:
-            #print("No voronoi o file e: " + self.file)
-            _lines = inn.readlines()
-            for line in _lines: 
-                #print("*****Vou executar o locations e o index eh:" + self.locationsIndex)
-                self.extractLocations(line)
+
+        with open(self.file, 'r') as entrada:
+            bar = Bar(self.filesize/2,"Extracting SPAV and VIST")
+            for line in entrada: 
+        #        self.extractLocations(line)
                 split = line.strip().split(" ") # Changed this from \t to space
-                #print(split)
-                user1 = int(split[0])
-                user1X = float(split[5])
-                user1Y = float(split[6])
-     
-                user2 = int(split[1])
-                user2X = float(split[7])
-                user2Y = float(split[8])
-     
+
+                user1, user1X, user1Y = split[0], float(split[5]), float(split[6])
+
+                user2, user2X, user2Y = split[1], float(split[7]), float(split[8])
+
                 time = float(split[4])
-     
-                distanceToCloser1 = sys.float_info.max
-                distanceToCloser2 = sys.float_info.max
-                user1Venue = 0
-                user2Venue = 0
-     
+
+                distanceToCloser1 = distanceToCloser2 = sys.float_info.max
+                user1Venue = user2Venue =  0
+
                 for i in range (0, len(self.venues)):
-     
-                    splitVenues = self.venues[i].split(" ")
-                    distance = self.euclideanDistance(user1X, user1Y, float(splitVenues[0]), float(splitVenues[1]))
+
+                    splitVenues = [float(c) for c in self.venues[i].split(" ")]
+                    distance = self.euclideanDistance(user1X, user1Y, splitVenues[0], splitVenues[1])
                     if (distance < distanceToCloser1):
                         distanceToCloser1 = distance
                         user1Venue = i
-     
-                    distance = self.euclideanDistance(user2X, user2Y, float(splitVenues[0]), float(splitVenues[1]))
+
+                    distance = self.euclideanDistance(user2X, user2Y, splitVenues[0], splitVenues[1])
                     if (distance < distanceToCloser2):
                         distanceToCloser2 = distance
                         user2Venue = i
-     
-                try:
-                    if (self.usersVenues[user1] != user1Venue):
-                        self.usersVenues[user1] = user1Venue
-                except:
-                    self.usersVenues[user1] = user1Venue
-     
-                try:
-                    if (self.usersVenues[user2] != user2Venue):
-                        self.usersVenues[user2] = user2Venue
-                except:
-                    self.usersVenues[user2] = user2Venue
-     
+
+                if user1 in self.usersVenues:
+                    current_value = self.usersVenues[user1].get(user1Venue,0)
+                    self.usersVenues[user1][user1Venue] = current_value + 1
+                else:
+                    self.usersVenues[user1] = {}
+
+                if user2 in self.usersVenues:
+                    current_value = self.usersVenues[user2].get(user2Venue,0)
+                    self.usersVenues[user2][user2Venue] = current_value + 1
+                else:
+                    self.usersVenues[user2] = {}
+
+                #self.usersVenues[user1] = user1Venue
+                #self.usersVenues[user2] = user2Venue
+                #try:
+                #    if (self.usersVenues[user1] != user1Venue):
+                #        self.usersVenues[user1] = user1Venue
+                #except:
+                #    self.usersVenues[user1] = user1Venue
+
+                #try:
+                #    if (self.usersVenues[user2] != user2Venue):
+                #        self.usersVenues[user2] = user2Venue
+                #except:
+                #    self.usersVenues[user2] = user2Venue
+
+
                 # Extracts Visit Time for user 1
-                if (split[0] in self.vist):
-                    if (user1Venue in self.vist[split[0]]):
-                        visitTime = self.vist[split[0]][user1Venue]
-                        self.vist[split[0]][user1Venue] = visitTime + time
-                    else:
-                        self.vist[split[0]][user1Venue] = 0.0
+                # TODO Verificar com Fabricio se o else tem ' + time ' ou nao
+                if (user1 in self.vist):
+                    visitTime = self.vist[user1].get(user1Venue,0.0)
+                    self.vist[user1][user1Venue] = visitTime + time
                 else:
-                    self.vist[split[0]] = {}
-     
+                    self.vist[user1] = {}
+
                 # Extracts Visit Time for user 2
-                if (split[1] in self.vist):
-                    if (user2Venue in self.vist[split[1]]):
-                        visitTime = self.vist[split[1]][user2Venue]
-                        self.vist[split[1]][user2Venue] = visitTime + time
-                    else:
-                        self.vist[split[1]][user2Venue] = 0.0
+                # TODO Verificar com Fabricio se o else tem ' + time ' ou nao
+                if (user2 in self.vist):
+                    visitTime = self.vist[user2].get(user2Venue,0.0)
+                    self.vist[user2][user1Venue] = visitTime + time
                 else:
-                    self.vist[split[1]] = {}
- 
+                    self.vist[user2] = {}
+
+                bar.progress()
+        bar.finish()
+
     def euclideanDistance(self, x1, y1, x2, y2):
+        x1,y1,x2,y2 = float(x1),float(y1),float(x2),float(y2)
         return math.sqrt(((x1 - x2) ** 2) + ((y1 - y2) ** 2))
 
     def autoCorrelation(self, values, lag):
         autocorrelations = float(lag)
- 
         for i in range (0, lag):
-            sum = 0
+            summ = 0
             for j in range(0, lag-1):
-                sum += values[j] * values[j + i]
+                summ += values[j] * values[j + i]
 
-            autocorrelations[i] = sum
+            autocorrelations[i] = summ
         return autocorrelations
