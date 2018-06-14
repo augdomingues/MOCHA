@@ -78,7 +78,7 @@ class Classifier:
                         continue
                     data = np.genfromtxt(line)
                     if len(data) == 0:
-                        input("File '{}' is empty. Press Enter to proceed to next metric. ".format(line))
+                        input("File '{}' is empty. Press Enter to proceed to next metric. ")
                         continue
                     name,params = self.best_fit_distribution(data,line)
                     if "/" in line:

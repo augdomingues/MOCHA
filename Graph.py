@@ -48,6 +48,10 @@ class Graph:
     def get_vertex(self, n):
         return self.vert_dict[n]
 
+    def remove_edge(self, frm, to):
+        if (frm, to) in self.edges:
+            del self.edges[((frm,to))]
+
     def add_edge(self, frm, to, cost = 0):
         if frm not in self.vert_dict:
             self.add_vertex(frm)

@@ -1,0 +1,8 @@
+/home/paulo/Documents/PROJECTS/MOCHA/DataCities_EnviroCar/enviroCar_RawTrace_Essen_metrics_folder/RADG.txt
+/home/paulo/Documents/PROJECTS/MOCHA/DataCities_EnviroCar/enviroCar_RawTrace_Essen_metrics_folder/SOCOR.txt
+/home/paulo/Documents/PROJECTS/MOCHA/DataCities_EnviroCar/enviroCar_RawTrace_Essen_metrics_folder/TRVD.txt
+/home/paulo/Documents/PROJECTS/MOCHA/DataCities_EnviroCar/enviroCar_RawTrace_Essen_metrics_folder/TOPO.txt
+/home/paulo/Documents/PROJECTS/MOCHA/DataCities_EnviroCar/enviroCar_RawTrace_Essen_metrics_folder/CODU.txt
+/home/paulo/Documents/PROJECTS/MOCHA/DataCities_EnviroCar/enviroCar_RawTrace_Essen_metrics_folder/EDGEP.txt
+/home/paulo/Documents/PROJECTS/MOCHA/DataCities_EnviroCar/enviroCar_RawTrace_Essen_metrics_folder/CONEN.txt
+/home/paulo/Documents/PROJECTS/MOCHA/DataCities_EnviroCar/enviroCar_RawTrace_Essen_metrics_folder/INCO.txt

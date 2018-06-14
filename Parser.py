@@ -1,13 +1,14 @@
 import math
 import os
-from Encounter import Encounter
-from PositionEntry import PositionEntry
-from Cell import Cell
-from Graph import Graph
-from Graph import Vertex
-from User import User
-from Bar import Bar
-import pdb
+
+from MOCHA.Bar import Bar
+
+from MOCHA.Cell import Cell
+from MOCHA.Encounter import Encounter
+from MOCHA.Graph import Graph
+from MOCHA.PositionEntry import PositionEntry
+from MOCHA.User import User
+
 
 class Parser:
  
@@ -189,9 +190,10 @@ class Parser:
                                 elif (g.containsEdge(user.toString(), user2.toString())):
                                     encounter = Encounter(int(user.toString()), int(user2.toString()))
                                     beginingPosistion = beginingPositions[encounter.toString()]
-                                    out.write(generateEntry(user, user2, time, g, beginingPosistion))
+                                    out.write(self.generateEntry(user, user2, time, g, beginingPosistion))
                                     newLines += 1
-                                    g.removeEdge(user.toString(), user2.toString())
+                                    g.remove_edge(user.toString(), user2.toString())
+                                    g.remove_edge(user2.toString(), user.toString())
 
                             newEntry = PositionEntry(positionX, positionY, coordX, coordY, time)
                             positionDictionary[user.toString()] = newEntry
@@ -239,9 +241,10 @@ class Parser:
                                         elif (g.containsEdge(user.toString(), user2.toString())):
                                             encounter = Encounter(int(user.toString()), int(user2.toString()))
                                             beginingPosistion = beginingPositions[encounter.toString()]
-                                            out.write(generateEntry(user, user2, time, g, beginingPosistion))
+                                            out.write(self.generateEntry(user, user2, time, g, beginingPosistion))
                                             newLines += 1
-                                            g.removeEdge(user.toString(), user2.toString())
+                                            g.remove_edge(user.toString(), user2.toString())
+                                            g.remove_edge(user2.toString(), user.toString())
                             except:
                                 pass
                             rangeYBegin += 1

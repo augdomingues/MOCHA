@@ -1,7 +1,6 @@
 # Use a # to ignore a metric
 INCO
 CODU
-SOCOR
 EDGEP
 TOPO
 #MAXCON
@@ -10,3 +9,13 @@ RADG
 TRVD
 #SPAV
 CONEN
+SOCOR
+#Metricas : Descrição
+#CODU: Duração do contato  - maximo n2
+#EDGEP: Persistencia do contato - maximo n2
+#INCO: Tempo entre contato, tempo para recontatar - maximo n2
+#SOCOR: Correlação social (contato em frequencia (EDGEP) e em comum (TOPO))
+#TOPO: Nos em comum (0 a 1) - n2
+#RADG: Raio maximo de cada nó - n
+#TRVD: Média das somas das distancias de viagem de cada nó - n
+#Visit Time: Tempo médio de visita de cada nó -n

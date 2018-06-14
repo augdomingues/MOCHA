@@ -8,7 +8,7 @@ class Bar:
         self.value = initial
         self.increment = 1
         self.points = []
-        for i in range(0,min(self.limit,100)):
+        for i in range(0,min(int(self.limit),100)):
             self.points.append("░")
         self.current_point = 0
         self.starting_time = time.time()

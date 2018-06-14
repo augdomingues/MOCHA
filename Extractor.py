@@ -277,21 +277,37 @@ class Extractor:
         encounter = Encounter(int(components[0]), int(components[1]))
  
         if (encounter.toString() not in self.edgep):
+            # print("Nao existia aresta " + encounter.toString()
+            # + ", criei uma, com edgep valendo 1 e o dia do encontro foi " +
+            # encounterDay);
             self.edgep[encounter.toString()] = 1.0
             self.encounters[encounter.toString()] = encounterDay
         else:
             if (self.encounters[encounter.toString()] != encounterDay):
+                # print("Ja existia uma aresta entre " +
+                # encounter.toString() + " e o dia de encontro foi diferente,
+                # antes era " + encounters.get(encounter.toString()) + " agora
+                # e " + encounterDay);
                 self.edgep[encounter.toString()] = self.edgep[encounter.toString()] + 1
                 self.encounters[encounter.toString()] = encounterDay
-
+ 
+        # if (edgep.containsKey(encounter.toString()) &&
+        # encounters.get(encounter.toString()) != encounterDay) {
+        # edgep.put(encounter.toString(), edgep.get(encounter.toString()) + 1);
+        # encounters.put(encounter.toString(), encounterDay);
+        # } else {
+        # edgep.put(encounter.toString(), 1.0);
+        # encounters.put(encounter.toString(), encounterDay);
+        # }
+ 
     def extractTOPO(self, line):
         components = line.strip().split(" ")
         user1 = components[0]
         user2 = components[1]
-
+ 
         self.topoGraph.add_vertex(user1)
         self.topoGraph.add_vertex(user2)
-
+ 
         if (not self.topoGraph.containsEdge(user1, user2)):
             self.topoGraph.add_edge(user1, user2)
 
@@ -307,14 +323,14 @@ class Extractor:
                 saida.write("{}\n".format(self.socor))
             else:
                 saida.write("There is no correlation.\n")
-    
-
+     
+     
     def trim(self, fileName):
         i = len(fileName) - 1
         while (fileName[i] != '\\' and i >= 0):
             i -= 1
         return fileName[i + 1:]
-
+ 
     def calculateCovariance(self):
         covariance = 0
         meanTOPO = self.calculateMean(self.topo)
@@ -326,32 +342,33 @@ class Extractor:
                     covariance += (self.topo[key] - meanTOPO) * (self.edgep[key] - meanEDGEP)
             covariance /= len(keys)
         return covariance
-
+    
     #TODO: Replace by numpy calculation
     def calculateStandardDeviation(self, values):
         standardDeviation = 0
         mean = self.calculateMean(values)
-
+ 
         keys = values.keys()
-
+        
         if len(keys) - 1 > 0:
             for key in keys:    
                 if (values[key] != None):
                     standardDeviation += (values[key] - mean) ** 2
             standardDeviation /= (len(keys) - 1)
-
+ 
         return math.sqrt(standardDeviation)
-
+ 
     def calculateMean(self,values):
         valid_values = [item for key,item in values.items() if item != None]
         mean = sum(valid_values) / max(len(valid_values),1)
         return mean
-
+ 
     def extractLocations(self):
         bar = Bar(self.filesize/2,"Extracting locations")
         with open(self.file, 'r') as entrada:
             for line in entrada:
-                split = line.strip().split(" ")
+                #split = line.strip().split(" ")
+                split = line.split(" ")
                 key = "{} {}".format(split[5],split[6])
                 if key not in self.locations:
                     self.locations[key] = self.locationsIndex
@@ -363,26 +380,32 @@ class Extractor:
                     self.locationsIndex += 1
                 bar.progress()
         bar.finish()
-
+ 
     def extractVenues(self):
         numberVenues = int(self.maxX * self.maxY / (self.r * self.r))
-        numberVenues = min(835,numberVenues)
+        numberVenues = 835
 
 
         _set = list(self.locations.keys())
+        #print("*********** O tamanho do set eh: "  + str(len(_set)) + "***********")
         randomIndex = 0
         venuesIndex = 0
         bar = Bar(numberVenues,"Extracting venues")
         for i in range (0,numberVenues):
-            randomIndex = random.randint(0, len(_set) - 1)
-            while _set[randomIndex] not in self.locations:
-                randomIndex = random.randint(0,len(_set) - 1)
+            randomIndex = random.randint(0, len(_set))
+            try:
+                while (self.venues[self.locations[_set[randomIndex]]] != None):
+                    randomIndex = random.randint(0, len(_set))
+            except:
+                pass
+            if randomIndex == len(_set):
+                randomIndex -= 1
             self.venues[venuesIndex] = _set[randomIndex]
             venuesIndex += 1
             bar.progress()
         bar.finish()
-
-
+ 
+ 
     '''
     getClosestVenue params x (String): x coordinate of users location y
     (String): y coordinate of users location return venue (String): closest
@@ -393,7 +416,7 @@ class Extractor:
         _set = list(self.venues.keys())
         minimum_distance = sys.float_info.max
         closest_venue = 0
-
+ 
         for i in range (0, len(_set)):
             venue_location = self.venues[_set[i]].split(" ")
             distance = self.euclideanDistance(x,y,venue_location[0], venue_location[1])
