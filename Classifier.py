@@ -8,6 +8,12 @@ import sys
 from Bar import Bar
  
 class Classifier:
+    
+    def __init__(self,filename):
+        self.files = ["CODU", "SPAV", "INCO", "EDGEP", "CODU", "SOCOR", "TOPO", "RADG", "VIST", "TRVD", "SPAV", "CONEN"]
+        self.barra = "\\" if os.name == 'nt' else "/"
+        self.filename = filename.split(".")[0].replace("_parsed", "") + "_metrics_folder{}".format(self.barra)
+        self.metrics = {}
 
     # Create models from data
     def best_fit_distribution(self, data, filename, bins=200, ax=None):
@@ -64,29 +70,23 @@ class Classifier:
         bar.finish()
         return (best_distribution.name, best_params)
 
-    def __init__(self,filename):
-        self.barra = "\\" if os.name == 'nt' else "/"
-        self.filename = filename.split(".")[0].replace("_parsed", "") + "_metrics_folder{}".format(self.barra)
-        self.metrics = {}
 
     def classify(self):
         with open("{}fittedMetrics.txt".format(self.filename), "w+") as saida:
-            with open("filesForFitting.txt", "r") as entrada:
-                for line in entrada:
-                    line = line.strip()
-                    if "SOCOR" in line:
-                        continue
-                    data = np.genfromtxt(line,delimiter=",")
+            for f in self.files:
+                f = "{}{}.txt".format(self.filename,f)
+                if os.path.exists(f):
+                    data = np.genfromtxt(f,delimiter=",")
                     if len(data) == 0:
-                        input("File '{}' is empty. Press Enter to proceed to next metric. ".format(line))
+                        input("File '{}' is empty. Press Enter to proceed to next metric. ".format(f))
                         continue
                     if len(data.shape) == 2: # If the file has the users IDs
                         data = data[:,1] # Remove the user IDs for the classification
-                    name,params = self.best_fit_distribution(data,line)
+                    name,params = self.best_fit_distribution(data,f)
                     if "/" in line:
-                        metricName = line.split("/")[-1].replace(".txt", "")
+                        metricName = f.split("/")[-1].replace(".txt", "")
                     elif "\\" in line:
-                        metricName = line.split("\\")[-1].replace(".txt", "")
+                        metricName = f.split("\\")[-1].replace(".txt", "")
                     saida.write("{},{},{}\n".format(metricName,name,params))
                     self.metrics[metricName] = (name,params)
         return self.metrics

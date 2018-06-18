@@ -32,7 +32,7 @@ class Extractor:
         self.barra = "\\" if os.name == 'nt' else "/"
         #print("*****FILENAME: " + filename + "******")
         if "." in filename:
-            self.folderName = filename.split(".")[0].replace("_parsed", "") + "_metrics_folder{}".format(self.barra)
+            self.folderName = filename.replace("_parsed.csv", "") + "_metrics_folder{}".format(self.barra)
         else:
             self.folderName = filename.replace("_parsed", "") + "_metrics_folder{}".format(self.barra)
         #print("O nome do arquivo eh " + filename)
