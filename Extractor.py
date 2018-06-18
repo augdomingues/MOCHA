@@ -316,8 +316,8 @@ class Extractor:
             standardDeviationEDGEP = self.calculateStandardDeviation(self.edgep)
             covariance = self.calculateCovariance()
             divisor = (standardDeviationEDGEP * standardDeviationTOPO)
-            self.socor = covariance/divisor if divisor > 0 else 0
-            if(self.socor > 0):
+            self.socor = covariance/divisor if divisor != 0 else 0
+            if(self.socor != 0):
                 saida.write("{}\n".format(self.socor))
             else:
                 saida.write("There is no correlation.\n")
