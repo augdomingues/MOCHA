@@ -93,7 +93,7 @@ class Extractor:
         self.extractLocations()
         self.extractVenues()
         self.voronoi()
-        bar = Bar(self.filesize,"Extracting homes")
+        bar = Bar(self.filesize/2,"Extracting homes")
         with open(self.file, "r") as entrada:
             for line in entrada:
                 line = line.strip()
@@ -101,7 +101,7 @@ class Extractor:
                 bar.progress()
         bar.finish()
 
-        bar = Bar(self.filesize,"Extracting INCO, CODU, MAXCON and EDGEP")
+        bar = Bar(self.filesize/2,"Extracting INCO, CODU, MAXCON and EDGEP")
         with open(self.file, "r") as entrada:
             for line in entrada:
                 line = line.strip()

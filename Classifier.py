@@ -76,10 +76,12 @@ class Classifier:
                     line = line.strip()
                     if "SOCOR" in line:
                         continue
-                    data = np.genfromtxt(line)
+                    data = np.genfromtxt(line,delimiter=",")
                     if len(data) == 0:
                         input("File '{}' is empty. Press Enter to proceed to next metric. ".format(line))
                         continue
+                    if len(data.shape) == 2: # If the file has the users IDs
+                        data = data[:,1] # Remove the user IDs for the classification
                     name,params = self.best_fit_distribution(data,line)
                     if "/" in line:
                         metricName = line.split("/")[-1].replace(".txt", "")
