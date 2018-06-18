@@ -106,12 +106,12 @@ class Principal:
             self.classify(args,filename)
 
     def readMetrics(self):
-        if not os.path.exists("metrics.data"):
-            with open("metrics.data", "w+") as entrada:
+        if not os.path.exists("metrics.txt"):
+            with open("metrics.txt", "w+") as entrada:
                 entrada.write("# Use a # to ignore a metric\n")
                 entrada.write("INCO\nCODU\nSOCOR\nEDGEP\nTOPO\nRADG\nVIST\nTRVD\nSPAV\nCONEN")
 
-        with open("metrics.data", "r") as entrada:
+        with open("metrics.txt", "r") as entrada:
             for line in entrada:
                 line = line.strip().replace(" ", "")
                 if line[0] == "#":
@@ -120,8 +120,8 @@ class Principal:
 
     def readConfigurationParameters(self):
         # TODO ler outro parametro do arquivo de configuracao
-        if os.path.exists("config.data"):
-            with open("config.data", "r") as entrada:
+        if os.path.exists("config.txt"):
+            with open("config.txt", "r") as entrada:
                 self.configurationParameters = ConfigurationParameters()
                 line = entrada.readline()
                 line = line.split(" ")
