@@ -81,12 +81,8 @@ class Principal:
         if filename == "":
             filename = args[-1]
         if "-c" in args:
-            if "-id" in args:
-                print("Can't classify with User IDs. Abborting classification...")
-                return
-            else:
-                classifier = Classifier(filename)
-                classifier.classify()
+            classifier = Classifier(filename)
+            classifier.classify()
 
 
     def main(self, args):
