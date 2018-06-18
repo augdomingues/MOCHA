@@ -40,6 +40,11 @@ class Extractor:
         self.generatedFileNames = {}
         self.maxX, self.maxY, self.r, self.maxTime = maxX, maxY, r, maxTime
         self.metrics = [key for key in metrics.keys()]
+
+        # Guarantees that SOCOR is always the last element
+        if "SOCOR" in self.metrics:
+            self.metrics.remove("SOCOR")
+            self.metrics.append("SOCOR")
         self.metricFiles = {}
 
         # Structures for the metrics
