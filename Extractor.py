@@ -31,7 +31,10 @@ class Extractor:
         # Checks if system is windows to create folder correctly
         self.barra = "\\" if os.name == 'nt' else "/"
         #print("*****FILENAME: " + filename + "******")
-        self.folderName = filename.split(".")[0].replace("_parsed", "") + "_metrics_folder{}".format(self.barra)
+        if "." in filename:
+            self.folderName = filename.split(".")[0].replace("_parsed", "") + "_metrics_folder{}".format(self.barra)
+        else:
+            self.folderName = filename.replace("_parsed", "") + "_metrics_folder{}".format(self.barra)
         #print("O nome do arquivo eh " + filename)
         self.file, self.filesize = filename, filesize
         self.generatedFileNames = {}
@@ -210,7 +213,10 @@ class Extractor:
             for key,item in self.vist.items():
                 vistd = sum([item for key,item in item.items()])
                 vistd = vistd/max(len(item),1)#  0 if len(item) == 0 else vistd/len(items)
-                saida.write("{}\n".format(vistd))
+                if self.REPORT_ID:
+                    saida.write("{},{}\n".format(key,vistd))
+                else:
+                    saida.write("{}\n".format(vistd))
 
     def printEDGEP(self):
         with open(self.metricFiles["EDGEP"], 'w') as saida:
@@ -244,7 +250,10 @@ class Extractor:
                 w = float(self.incoGraph.getEdgeWeight(user1,user2))
                 incoEncounters.append(float(components[2]) - float(w))
                 self.inco[encounter.toString()] =  incoEncounters
-                saida.write("{}\n".format(float(components[2]) - w))
+                if self.REPORT_ID:
+                    saida.write("{},{},{}\n".format(user1,user2,float(components[2]) - w))
+                else:
+                    saida.write("{}\n".format(float(components[2]) - w))
                 self.incoGraph.add_edge(user1, user2, float(components[3]))
      
             else:

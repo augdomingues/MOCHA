@@ -189,9 +189,10 @@ class Parser:
                                 elif (g.containsEdge(user.toString(), user2.toString())):
                                     encounter = Encounter(int(user.toString()), int(user2.toString()))
                                     beginingPosistion = beginingPositions[encounter.toString()]
-                                    out.write(generateEntry(user, user2, time, g, beginingPosistion))
+                                    out.write(self.generateEntry(user, user2, time, g, beginingPosistion))
                                     newLines += 1
-                                    g.removeEdge(user.toString(), user2.toString())
+                                    g.remove_edge(user.toString(), user2.toString())
+                                    g.remove_edge(user2.toString(), user.toString())
 
                             newEntry = PositionEntry(positionX, positionY, coordX, coordY, time)
                             positionDictionary[user.toString()] = newEntry
@@ -239,9 +240,10 @@ class Parser:
                                         elif (g.containsEdge(user.toString(), user2.toString())):
                                             encounter = Encounter(int(user.toString()), int(user2.toString()))
                                             beginingPosistion = beginingPositions[encounter.toString()]
-                                            out.write(generateEntry(user, user2, time, g, beginingPosistion))
+                                            out.write(self.generateEntry(user, user2, time, g, beginingPosistion))
                                             newLines += 1
-                                            g.removeEdge(user.toString(), user2.toString())
+                                            g.remove_edge(user.toString(), user2.toString())
+                                            g.remove_edge(user2.toString(),user.toString())
                             except:
                                 pass
                             rangeYBegin += 1
