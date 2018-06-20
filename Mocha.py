@@ -6,34 +6,38 @@ import sys
 import os
 from Bar import Bar
 
+
 class Principal:
- 
+
     def __init__(self):
         self.metrics = {}
         self.readConfigurationParameters()
-        self.summary = {"-ps": "Parsing SWIM ", "-e": "Extracting ", "-pr": "Parsing RAW ", "-c":  "Classify metrics ", "-id": "Report users' ID "}
+        self.summary = {"-ps": "Parsing SWIM ", "-e": "Extracting ",
+                        "-pr": "Parsing RAW ", "-c":  "Classify metrics ",
+                        "-id": "Report users' ID "}
 
     def usage(self):
-        print("+--------------------------------------------------------------------------+")
-        print("|                                                                          |")
-        print("|    ( (                                                                   |")
-        print("|    _)_)_                                                                 |")
-        print("|  c(  M  )     MOCHA: a tool for MObility CHaracteristics Analysis        |")
-        print("|  ,-\___/-.                                                               |")
-        print("|  `-------'                                                               |")
-        print("|                                                                          |")
-        print("| Usage: Principal.py ['-pr', '-ps', '-e', '-c', '-id']  filename          |")
-        print("|                                                                          |")
-        print("| ['-pr', '-ps', '-e']: Parse (RAW), Parse (SWIM) , Extract                |")
-        print("| [ '-c' ]      : Classify distributions                                   |")
-        print("| [ '-id']      : Report ID ( not to be used with '-c')                    |")
-        print("| filename        : file to be parsed/processed                            |")
-        print("|               FILENAME MUST BE THE LAST ARGUMENT                         |")
-        print("+--------------------------------------------------------------------------+")
-    
-    def validate_input(self,args):
-        for i in range(0,len(args)-1):
-            if "-" in args[i] and args[i] not in ["-ps", "-e", "-pr", "-c", "-id"]:
+        print("+-----------------------------------------------------------+")
+        print("|                                                           |")
+        print("|    ( (                                                    |")
+        print("|   _)_)_                                                   |")
+        print("| c(  M  ) MOCHA: tool for MObility CHaracteristics Analysis|")
+        print("| ,-\___/-.                                                 |")
+        print("| `-------'                                                 |")
+        print("|                                                           |")
+        print("| Usage: Principal.py [-pr, -ps, -e, -c, -id] filename      |")
+        print("|                                                           |")
+        print("| ['-pr', '-ps', '-e']: Parse (RAW), Parse (SWIM) , Extract |")
+        print("| [ '-c' ]      : Classify distributions                    |")
+        print("| [ '-id']      : Report ID                                 |")
+        print("| filename      : file to be parsed/processed               |")
+        print("|               FILENAME MUST BE THE LAST ARGUMENT          |")
+        print("+-----------------------------------------------------------+")
+
+    def validate_input(self, args):
+        valid_args = ["-ps", "-e", "-pr", "-c", "-id"]
+        for i in range(0, len(args)-1):
+            if "-" in args[i] and args[i] not in valid_args:
                 self.usage()
                 return False
         if "-help" in args:
@@ -44,13 +48,13 @@ class Principal:
             return False
         return True
 
-    def summarize(self,args):
-        print("\n\t\t\t",end="")
-        for i in range(0,len(args) - 1):
-            print(self.summary[args[i]],end="")
+    def summarize(self, args):
+        print("\n\t\t\t", end="")
+        for i in range(0, len(args) - 1):
+            print(self.summary[args[i]], end="")
         print("from {}\n".format(args[-1]))
 
-    def parse(self,parser,args):
+    def parse(self, parser, args):
         filename = ""
         if "-pr" in args:
             filename = parser.parseRaw(args[-1])
@@ -58,32 +62,31 @@ class Principal:
             filename = parser.parseSwim(args[-1])
         return filename
 
-
-    def extract(self,parser,extractor,args,filename):
-
+    def extract(self, parser, extractor, args, filename):
         if "-e" in args:
             self.readMetrics()
-            # If the flag to parse is not provided, then the parsed file is the one passed as input
+            # If the flag to parse is not provided,
+            # then the parsed file is the one passed as input
             if "-pr" not in args and "-ps" not in args:
                 filename = args[-1]
                 parser.collectMaxes(filename)
-                filesize = parser.filesize
+                fsize = parser.filesize
             else:
-                filesize = parser.parsedfilesize/2
-                                                                                                                                        # Checks to report ID or not
-            extractor = Extractor(filename,parser.maxT,parser.maxX,parser.maxY,self.configurationParameters.communicationRadius,filesize,self.metrics, "-id" in args)
+                fsize = parser.parsedfilesize/2
+            radius = self.configurationParameters.communicationRadius
+            extractor = Extractor(filename, parser.maxT, parser.maxX,
+                                  parser.maxY, radius, fsize,
+                                  self.metrics, "-id" in args)
             extractor.extract()
-
         return filename
 
-    def classify(self,args,filename):
+    def classify(self, args, filename):
         # If user is running only the classifying module
         if filename == "":
             filename = args[-1]
         if "-c" in args:
             classifier = Classifier(filename)
             classifier.classify()
-
 
     def main(self, args):
         self.readConfigurationParameters()
@@ -93,19 +96,20 @@ class Principal:
             self.summarize(args)
             # Parse trace
             parser = Parser(self.configurationParameters.communicationRadius)
-            filename = self.parse(parser,args)
+            filename = self.parse(parser, args)
 
             # Extract characteristics
-            filename = self.extract(parser,extractor,args,filename)
+            filename = self.extract(parser, extractor, args, filename)
 
             # Classify characteristics
-            self.classify(args,filename)
+            self.classify(args, filename)
 
     def readMetrics(self):
+        head = "INCO\nCODU\nSOCOR\nEDGEP\nTOPO\nRADG\nVIST\nTRVD\nSPAV\nCONEN"
         if not os.path.exists("metrics.txt"):
             with open("metrics.txt", "w+") as entrada:
                 entrada.write("# Use a # to ignore a metric\n")
-                entrada.write("INCO\nCODU\nSOCOR\nEDGEP\nTOPO\nRADG\nVIST\nTRVD\nSPAV\nCONEN")
+                entrada.write(head)
 
         with open("metrics.txt", "r") as entrada:
             for line in entrada:
@@ -121,7 +125,8 @@ class Principal:
                 self.configurationParameters = ConfigurationParameters()
                 line = entrada.readline()
                 line = line.split(" ")
-                self.configurationParameters.communicationRadius = float(line[1])
+                radius = float(line[1])
+                self.configurationParameters.communicationRadius = radius
         else:
             print("Configuration file not found! Recreating!")
             cp = ConfigurationParameters()
@@ -129,3 +134,4 @@ class Principal:
 
 a = Principal()
 a.main(sys.argv[1:])
+
