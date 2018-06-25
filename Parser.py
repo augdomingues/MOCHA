@@ -29,19 +29,19 @@ class Parser:
             with open(filename, 'r') as entrada:
                 for i, line in enumerate(entrada):
                     bar.progress()
-                    components = line.strip().split(" ")
-                    components = self.removeEmpty(components)
-                    encounter = Encounter(components[2], components[3])
+                    comps = line.strip().split(" ")
+                    comps = self.removeEmpty(comps)
+                    encounter = Encounter(comps[2], comps[3])
                     if encounter.toString() in encounters:
                         e = encounters[encounter.toString()]
-                        self.parsedfilesize+=1
-                        out.write("{} {} ".format(components[2], components[3]))
-                        out.write("{} {} ".format(components[3], e))
-                        out.write("{} ".format(float(components[0]) - e))
-                        out.write("{} {} ".format(components[4], components[5]))
-                        out.write("{} ".format(components[6]))
-                        out.write("{}\n".format(components[7]))
-                    encounters[encounter.toString()] = float(components[0])
+                        self.parsedfilesize += 1
+                        out.write("{} {} ".format(comps[2], comps[3]))
+                        out.write("{} {} ".format(comps[3], e))
+                        out.write("{} ".format(float(comps[0]) - e))
+                        out.write("{} {} ".format(comps[4], comps[5]))
+                        out.write("{} ".format(comps[6]))
+                        out.write("{}\n".format(comps[7]))
+                    encounters[encounter.toString()] = float(comps[0])
         bar.finish()
         return newFile
 
@@ -62,7 +62,6 @@ class Parser:
                 self.maxT = int(max(time, self.maxT))
                 self.maxX = int(math.ceil(max(coordinateX, self.maxX)))
                 self.maxY = int(math.ceil(max(coordinateY, self.maxY)))
-
 
     """
         collectMaxes: look for the highest values for X,Y and time
@@ -109,14 +108,14 @@ class Parser:
                 self.maxX = math.ceil(max(coordinateXUser2, self.maxX))
                 self.maxY = math.ceil(max(coordinateYUser1, self.maxY))
                 self.maxY = math.ceil(max(coordinateYUser2, self.maxY))
-                self.maxT = max(time,self.maxT)
+                self.maxT = max(time, self.maxT)
 
     def parseRaw(self, filename):
         self.preParseRaw(filename)
-        cells = {} # HashMap<String, LinkedList<User>>
+        cells = {}
         g = Graph()
-        positionDictionary = {} # HashMap<String, PositionEntry>
-        beginingPositions = {} # HashMap<String, String> 
+        positionDictionary = {}
+        beginingPositions = {}
         with open(self.generateFileName(filename), 'w+') as out:
             newLines = 0
             bar = Bar(self.filesize, "Parsing RAW file")
@@ -124,71 +123,82 @@ class Parser:
                 for i, line in enumerate(entrada):
                     bar.progress()
                     components = line.split(" ")
-
                     _id = int(components[0])
-                    positionX = float(components[1])
-                    positionY = float(components[2])
-                    coordX = math.floor(positionX / self.r)
-                    coordY = math.floor(positionY / self.r)
+                    posX = float(components[1])
+                    posY = float(components[2])
+                    coordX = math.floor(posX / self.r)
+                    coordY = math.floor(posY / self.r)
                     time = float(components[3])
 
-                    user = User(_id, positionX, positionY)
+                    user = User(_id, posX, posY)
+                    u1 = user.toString()
+                    u1x, u1y = user.x, user.y
 
                     try:
-                        entry = positionDictionary[user.toString()]
-                        if entry.positionX != positionX or
-                        entry.positionY != positionY):
+                        entry = positionDictionary[u1]
+                        entryX, entryY = entry.positionX, entry.positionY
+                        if entryX != posX or entryY != posY:
                             # The node moved
                             oldCell = Cell(entry.coordX, entry.coordY)
-                            usersInCell = cells[oldCell.toString()]
-                            usersInCell = self.removeUserFromCell(usersInCell, user.toString())
-                            cells[oldCell.toString()] = usersInCell
-                            oldUser = User(_id, entry.positionX, entry.positionY)
-                            adjacent = self.getAdjacentCellUsers(cells, oldUser, self.r)
+                            usrInCell = cells[oldCell.toString()]
+                            usrInCell = self.removeUserFromCell(usrInCell, u1)
+                            cells[oldCell.toString()] = usrInCell
+                            oldUser = User(_id, entryX, entryY)
+                            r = self.r
+                            adj = self.getAdjacentCellUsers(cells, oldUser, r)
                             newCell = Cell(coordX, coordY)
                             try:
-                                usersInCell = cells[newCell.toString()]
-                                usersInCell.append(user)
-                                cells[newCell.toString()] = usersInCell
+                                usrInCell = cells[newCell.toString()]
+                                usrInCell.append(user)
+                                cells[newCell.toString()] = usrInCell
                             except:
-                                usersInCell = []
-                                usersInCell.append(user)
-                                cells[newCell.toString()] = usersInCell
+                                usrInCell = []
+                                usrInCell.append(user)
+                                cells[newCell.toString()] = usrInCell
 
                             for user2 in adjacent:
-
-                                if self.euclidean(user.x, user.y, user2.x, user2.y) <= self.r:
-                                    vert1 = g.get_vertex(user.toString())
+                                u2x, u2y = user2.x, user2.y
+                                u2 = user2.toString()
+                                euc = self.euclidean(u1x, u1y, u2x, u2y)
+                                if euc <= self.r:
+                                    vert1 = g.get_vertex(u1)
                                     conected = False
 
                                     for vert2 in vert1.get_connections():
-                                        if vert2.get_id() == user2.toString():
+                                        if vert2.get_id() == u2:
                                             conected = True
-                                            g.add_edge(user.toString(), user2.toString(), time)
-                                            g.add_edge(user2.toString(), user.toString(), time)
+                                            g.add_edge(u1, u2, time)
+                                            g.add_edge(u2, u1, time)
                                             break
 
                                     if not conected:
-                                        g.add_edge(user.toString(), user2.toString(), time)
-                                        g.add_edge(user2.toString(), user.toString(), time)
-                                        encounter = Encounter(int(user.toString()), int(user2.toString()))
-                                        beginingPositions[encounter.toString()] = str(user.x) + " " + str(user.y) + " " + str(user2.x) + " " + str(user2.y)
-                                elif (g.containsEdge(user.toString(), user2.toString())):
-                                    encounter = Encounter(int(user.toString()), int(user2.toString()))
-                                    beginingPosistion = beginingPositions[encounter.toString()]
-                                    out.write(self.generateEntry(user, user2, time, g, beginingPosistion))
-                                    newLines += 1
-                                    g.remove_edge(user.toString(), user2.toString())
-                                    g.remove_edge(user2.toString(), user.toString())
+                                        g.add_edge(u1, u2, time)
+                                        g.add_edge(u2, u1, time)
+                                        encounter = Encounter(int(u1), int(u2))
+                                        enc = encounter.toString()
+                                        pos = str(u1x) + " " + str(u1y) + " "
+                                        pos += str(u2x) + " " + str(u2y)
+                                        beginingPositions[enc] = pos
 
-                            newEntry = PositionEntry(positionX, positionY, coordX, coordY, time)
-                            positionDictionary[user.toString()] = newEntry
+                                elif (g.containsEdge(u1, u2)):
+                                    encounter = Encounter(int(u1), int(u2))
+                                    enc = encounter.toString()
+                                    beginPos = beginingPositions[enc]
+                                    out.write(self.generateEntry(user, user2,
+                                                                 time, g,
+                                                                 beginPos))
+                                    newLines += 1
+                                    g.remove_edge(u1, u2)
+                                    g.remove_edge(u2, u1)
+
+                            e = PositionEntry(posX, posY, coordX, coordY, time)
+                            positionDictionary[u1] = e
 
                     except:
-                        newEntry = PositionEntry(positionX, positionY, coordX, coordY, time)
-                        positionDictionary[user.toString()] = newEntry
+                        e = PositionEntry(posX, posY, coordX, coordY, time)
+                        positionDictionary[u1] = e
 
-                        g.add_vertex(user.toString())
+                        g.add_vertex(u1)
 
                         newCell = Cell(coordX, coordY)
                         try:
@@ -212,25 +222,37 @@ class Parser:
                         while (rangeYBegin <= coordY + 1):
                             newCell = Cell(rangeXBegin, rangeYBegin)
                             try:
+                                u1 = user.toString()
+                                u1x, u1y = user.x, user.y
                                 usersInCell = cells[newCell.toString()]
                                 for user2 in usersInCell:
-                                    if (user.toString() != user2.toString()):
-                                        if self.euclidean(user.x, user.y, user2.x, user2.y) <= self.r:
-                                            if (g.containsEdge(user.toString(), user2.toString())):
-                                                g.add_edge(user.toString(), user2.toString(), time)
-                                                g.add_edge(user2.toString(), user.toString(), time)
+                                    u2 = user2.toString()
+                                    u2x, u2y = user2.x, user2.y
+                                    if (u1 != u2):
+                                        eu = self.euclidean(u1x, u1y, u2x, u2y)
+                                        if eu <= self.r:
+                                            if (g.containsEdge(u1, u2)):
+                                                g.add_edge(u1, u2, time)
+                                                g.add_edge(u2, u1, time)
                                             else:
-                                                g.add_edge(user.toString(), user2.toString(), time)
-                                                g.add_edge(user2.toString(), user.toString(), time)
-                                                encounter = Encounter(int(user.toString()), int(user2.toString()))
-                                                beginingPositions[encounter.toString()] = str(user.x) + " " + str(user.y) + " " + str(user2.x) + " " + str(user2.y)
-                                        elif (g.containsEdge(user.toString(), user2.toString())):
-                                            encounter = Encounter(int(user.toString()), int(user2.toString()))
-                                            beginingPosistion = beginingPositions[encounter.toString()]
-                                            out.write(self.generateEntry(user, user2, time, g, beginingPosistion))
+                                                g.add_edge(u1, u2, time)
+                                                g.add_edge(u2, u1, time)
+                                                e = Encounter(int(u1), int(u2))
+                                                enc = e.toString()
+                                                pos = str(u1x) + " " + str(u1y)
+                                                pos += " " + str(u2x) + " "
+                                                pos += str(u2y)
+                                                beginingPositions[enc] = pos
+                                        elif (g.containsEdge(u1, u2)):
+                                            e = Encounter(int(u1), int(u2))
+                                            enc = e.toString()
+                                            beginPos = beginingPositions[enc]
+                                            out.write(self.generateEntry(user,
+                                                      user2, time,
+                                                      g, beginPos))
                                             newLines += 1
-                                            g.remove_edge(user.toString(), user2.toString())
-                                            g.remove_edge(user2.toString(),user.toString())
+                                            g.remove_edge(u1, u2)
+                                            g.remove_edge(u2, u1)
                             except:
                                 pass
                             rangeYBegin += 1
@@ -257,23 +279,24 @@ class Parser:
     def generateFileName(self, filename):
         filename = os.path.abspath(filename)
         if "." in filename:
-            name,extension = filename.split(".")[0], filename.split(".")[1]
-            filename = "{}_parsed.{}".format(name,extension)
+            name, extension = filename.split(".")[0], filename.split(".")[1]
+            filename = "{}_parsed.{}".format(name, extension)
         else:
             filename = "{}_parsed".format(filename)
 
         if os.path.exists(filename):
-            ow = input("\nFile already exists. Are you sure you want to overwrite? (y/n): ")
-            if ow not in ["True","true", "TRUE", "Y", "y", "1", "yes", "YES", "Yes"]:
+            ow = input("\nFile already exists. Overwrite it? (y/n): ")
+            ow = ow.upper()
+            if ow not in ["TRUE", "Y", "YES"]:
                 raise SystemExit(0)
-
-
 
         return filename
 
     def generateEntry(self, user, user2, time, g, beginingPosition):
-        w = g.getEdgeWeight(user.toString(),user2.toString())
-        entry = "{} {} {} {} {} {}\n".format(user.id,user2.id,time,w,(time - w), beginingPosition)
+        w = g.getEdgeWeight(user.toString(), user2.toString())
+        entry = "{} {} ".format(user.id, user2.id)
+        entry += "{} {} {} ".format(time, w, (time - w))
+        entry += "{}\n".format(beginingPosition)
         return entry
 
     def getAdjacentCellUsers(self, cells, user, r):
@@ -290,10 +313,10 @@ class Parser:
                 newCell = Cell(rangeXBegin, rangeYBegin)
                 if newCell.toString() in cells:
                     usersInCell = cells[newCell.toString()]
-                    for user2 in usersInCell:
-                        if (user.toString() != user2.toString()):
-                            if self.euclidean(user.x, user.y, user2.x, user2.y) <= r:
-                                adjacent.append(user2)
+                    for u2 in usersInCell:
+                        if (user.toString() != u2.toString()):
+                            if self.euclidean(user.x, user.y, u2.x, u2.y) <= r:
+                                adjacent.append(u2)
                 rangeYBegin += 1
             rangeXBegin += 1
         return adjacent
@@ -301,44 +324,20 @@ class Parser:
     def euclidean(self, xi, yi, xj, yj):
         return math.sqrt(((xi - xj) ** 2) + ((yi - yj) ** 2))
 
-    def progressPercentage(self, remain, total):
-        if (remain > total):
-            raise ValueError('IllegalArgumentException')
-        maxBareSize = 10 # 10unit for 100%
-        remainProcent = int(((100 * remain) / total) / maxBareSize)
-        defaultChar = '-'
-        bare = ""
-        icon = "*"
-        for i in range (0, maxBareSize):
-            bare += defaultChar
-        bare += "]"
-        bareDone = "["
-        for i in range (0, remainProcent):
-            bareDone += icon
-
-        bareRemain = bare[remainProcent: len(bare)]
-        print("\r" + bareDone + bareRemain + " " + str(remainProcent * 10) + "%", end="")
-
-        if remain == total:
-            print("\n")
-
-
-    def parseNS2(self, file):
-        self.collectMaxesNS2(file)
-        out = open(self.generateFileName(file),'w')
+    def parseNS2(self, filename):
+        self.collectMaxesNS2(filename)
+        out = open(self.generateFileName(filename), 'w')
 
         i = 0
         print("Parsing file!\n")
-        with open(file) as inn:
-            _lines = inn. readlines()
-            for line in _lines:
-                self.progressPercentage(i, self.filesize)
+        with open(filename) as entrada:
+            for line in entrada:
                 i += 1
                 components = line.split(" ")
 
         out.close()
-        return self.generateFileName(file)
+        return self.generateFileName(filename)
 
-    def collectMaxesNS2(self, file):
+    def collectMaxesNS2(self, filename):
         pass
         # TODO Auto-generated method stub
