@@ -2,31 +2,15 @@ from Graph import Graph
 from Graph import Vertex
 from Graph import Edge
 from Encounter import Encounter
+from Location import Location
+from Home import Home
+from TravelPair import TravelPair
 import sys
 import math
 import random
 import os
 from Bar import Bar
 import pdb
-
-
-class Home:
-    def __init__(self, l, d):
-        self.location = l
-        self.degree = d
-
-
-class TravelPair:
-    def __init__(self, string, distance2):
-        self.distance = distance2
-        self.location = string
-
-
-class Location:
-    def __init__(self, l, vt):
-        self.location = l
-        self.visitTime = vt
-
 
 class Extractor:
 

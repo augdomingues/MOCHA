@@ -18,18 +18,13 @@ class Classifier:
         self.filename += "_metrics_folder{}".format(self.barra)
         self.metrics = {}
 
-    # Create models from data
     def best_fit_distribution(self, data, filename, bins=200, ax=None):
-        """Model data by finding best fit distribution to data"""
-        # Get histogram of original data
         y, x = np.histogram(data, bins=bins, density=True)
         x = (x + np.roll(x, -1))[:-1] / 2.0
 
-        # Distributions to check
         DISTRIBUTIONS = [st.dweibull, st.expon, st.gamma, st.logistic,
                          st.lognorm, st.norm, st.pareto]
 
-        # Best holders
         best_distribution = st.norm
         best_params = (0.0, 1.0)
         best_sse = np.inf
@@ -42,27 +37,15 @@ class Classifier:
             metric = filename
 
         bar = Bar(len(DISTRIBUTIONS), "Fitting {}".format(metric))
-        # Estimate distribution parameters from data
         for distribution in DISTRIBUTIONS:
-            # Try to fit the distribution
-            # Ignore warnings from data that can't be fit
             warnings.filterwarnings('ignore')
-
-            # fit dist to data
             params = distribution.fit(data)
-
-            # Separate parts of parameters
             arg = params[:-2]
             loc = params[-2]
             scale = params[-1]
-
-            # Calculate fitted PDF and error with fit in distribution
             pdf = distribution.pdf(x, loc=loc, scale=scale, *arg)
             sse = np.sum(np.power(y - pdf, 2.0))
             sse = -2*math.log(sse)+2*(len(params) + 1)
-            # SSE with Akaike's Information Criteria
-
-            # identify if this distribution is better
             if sse < best_sse:
                 best_distribution = distribution
                 best_params = params

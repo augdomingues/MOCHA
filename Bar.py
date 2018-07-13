@@ -1,6 +1,9 @@
 import math
 import time
 
+"""
+    This class prints a visual guidance of the progress of a task
+"""
 
 class Bar:
 

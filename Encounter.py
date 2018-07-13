@@ -1,4 +1,5 @@
 class Encounter:
+
     def __init__(self, id1, id2):
         self.id1 = int(id1)
         self.id2 = int(id2)

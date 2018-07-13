@@ -1,4 +1,5 @@
 class Cell:
+
     def __init__(self, k, l):
         self.k = k
         self.l = l
