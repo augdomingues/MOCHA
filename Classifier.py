@@ -11,7 +11,7 @@ from Bar import Bar
 class Classifier:
 
     def __init__(self, filename):
-        self.files = ["CODU", "SPAV", "INCO", "EDGEP", "CODU", "SOCOR",
+        self.files = ["CODU", "INCO", "EDGEP",
                       "TOPO", "RADG", "VIST", "TRVD", "SPAV", "CONEN"]
         self.barra = "\\" if os.name == 'nt' else "/"
         self.filename = filename.split(".")[0].replace("_parsed", "")
@@ -67,18 +67,20 @@ class Classifier:
                 f = "{}{}.txt".format(self.filename, f)
                 if os.path.exists(f):
                     data = np.genfromtxt(f, delimiter=",")
+                    if data is None:
+                        continue
                     if len(data) == 0:
-                        input("File '{}' is empty. Press Enter to proceed to
-                              next metric. ".format(f))
+                        input("File '{}' is empty. Press Enter to proceed to next metric. ".format(f))
                         continue
                     # Remove the IDs if they exist
                     if len(data.shape) == 2:
                         data = data[:, 1]
                     name, params = self.best_fit_distribution(data, f)
-                    if "/" in line:
-                        metricName = f.split("/")[-1].replace(".txt", "")
-                    elif "\\" in line:
-                        metricName = f.split("\\")[-1].replace(".txt", "")
+                    metricName = f
+                    # if "/" in line:
+                    #     metricName = f.split("/")[-1].replace(".txt", "")
+                    # elif "\\" in line:
+                    #     metricName = f.split("\\")[-1].replace(".txt", "")
                     saida.write("{},{},{}\n".format(metricName, name, params))
                     self.metrics[metricName] = (name, params)
         return self.metrics

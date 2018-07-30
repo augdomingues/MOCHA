@@ -115,7 +115,7 @@ class Extractor:
                 bar.progress()
                 src = edge.src
                 trg = edge.target
-                enc = Encounter(int(source), int(target))
+                enc = Encounter(int(src), int(trg))
 
                 if (enc.toString() not in self.totalNeighbors):
                     self.totalNeighbors[enc.toString()] = []
@@ -222,7 +222,7 @@ class Extractor:
                 if self.REPORT_ID:
                     key = key.split(" ")
                     usr1, usr2 = key[0], key[1]
-                    saida.write("{},{},{}\n".format(usr1, usr2, item)
+                    saida.write("{},{},{}\n".format(usr1, usr2, item))
                 else:
                     saida.write("{}\n".format(item))
 
@@ -514,9 +514,7 @@ class Extractor:
             self.trvd[user2] = userList
 
     def voronoi(self):
-        if "SPAV" not in self.metrics and
-           "VIST" not in self.metrics and
-           "CONEN" not in self.metrics:
+        if "SPAV" not in self.metrics and "VIST" not in self.metrics and "CONEN" not in self.metrics:
             return
 
         with open(self.file, 'r') as entrada:
