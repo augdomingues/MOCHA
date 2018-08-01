@@ -18,9 +18,9 @@ class Extractor:
                  metrics, report_id):
 
         # Checks if system is windows to create folder correctly
-        self.barra = "\\" if os.name == 'nt' else "/"
+        self.barra = os.sep
         if "." in filename:
-            self.folderName = filename.replace("_parsed.csv", "")
+            self.folderName = filename.replace("_parsed.csv", "").replace("_parsed.txt", "")
             self.folderName += "_metrics_folder{}".format(self.barra)
         else:
             self.folderName = filename.replace("_parsed", "")

@@ -13,7 +13,7 @@ class Classifier:
     def __init__(self, filename):
         self.files = ["CODU", "INCO", "EDGEP",
                       "TOPO", "RADG", "VIST", "TRVD", "SPAV", "CONEN"]
-        self.barra = "\\" if os.name == 'nt' else "/"
+        self.barra = os.sep
         self.filename = filename.split(".")[0].replace("_parsed", "")
         self.filename += "_metrics_folder{}".format(self.barra)
         self.metrics = {}
@@ -29,10 +29,8 @@ class Classifier:
         best_params = (0.0, 1.0)
         best_sse = np.inf
 
-        if "/" in filename:
-            metric = filename.split("/")[-1]
-        elif "\\" in filename:
-            metric = filename.split("\\")[-1]
+        if os.sep in filename:
+            metric = filename.split(os.sep)[1]
         else:
             metric = filename
 
@@ -77,10 +75,6 @@ class Classifier:
                         data = data[:, 1]
                     name, params = self.best_fit_distribution(data, f)
                     metricName = f
-                    # if "/" in line:
-                    #     metricName = f.split("/")[-1].replace(".txt", "")
-                    # elif "\\" in line:
-                    #     metricName = f.split("\\")[-1].replace(".txt", "")
                     saida.write("{},{},{}\n".format(metricName, name, params))
                     self.metrics[metricName] = (name, params)
         return self.metrics
