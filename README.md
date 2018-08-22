@@ -9,10 +9,12 @@ __Social Metrics__
  - CONEN: Contact Entropy (Computed as the Shannon's entropy)
  - MAXCON: Maximum number of connections in a interval *d* between a pair of users
  - SOCOR: Social Correlation of a trace
+ 
 __Spatial Metrics__
  - TRVD: Travel distance of a user
  - RADG: Radius of gyration of a user
  - SPAV: Spatial variability (computed as the Shannon's entropy)
+ 
 __Temporal Metrics__
  - VIST: Visit time of a user in a place
 
@@ -27,7 +29,7 @@ __Selecting the metrics__
 - First, you must select the metric you want to parse in the file __Metrics.txt__. To disconsider a Metric, use __#__ before its name. 
 
 __Adding your own metrics__
-To add your own metrics, you must create a class in the Metrics folder containing your metric. The class name must match exactly the metric name, and the class must implement the interface **Metric.py**, containing the methods **\_\_init\_\_**, **extract**, **print**, **explain**, and **commit**. Here's what they should do:
+- To add your own metrics, you must create a class in the Metrics folder containing your metric. The class name must match exactly the metric name, and the class must implement the interface **Metric.py**, containing the methods **\_\_init\_\_**, **extract**, **print**, **explain**, and **commit**. Here's what they should do:
  - \_\_init\_\_(self, infile, outfile, reportID, \*\*kwargs): initialize the structures in the metric. *infile* and *outfile* are created based on the metric and trace name. *reportID* referes to the reporting of the entities ID's. Any data that is shared between multiple metrics must be passed through the *\*\*kwargs* parameters. No processing should be done in this method.
  - extract(self): opens the input file (*self.infile*) and extracts the metrics. All the heavy processing should be done here, but you can create additional methods to improve clarity and code structure. In order to measure the time of the extraction, you can add the decorator **@Metric.timeexecution** to this method.
  - print(self): outputs the metric to the output file (*self.outfile*). You should use a condition for the *self.reportID* variable to print or not the ID's.
