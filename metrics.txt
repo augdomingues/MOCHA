@@ -1,12 +1,12 @@
 # Use a # to ignore a metric
 INCO
 CODU
-SOCOR
-EDGEP
-TOPO
+EDGEP*
+TOPO*
 #MAXCON
 RADG
 VIST
 TRVD
-SPAV
+SPAV*
 CONEN
+SOCOR

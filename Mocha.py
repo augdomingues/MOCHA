@@ -5,12 +5,13 @@ from Classifier import Classifier
 import sys
 import os
 from Bar import Bar
-
+import Extractor2_0
 
 class Principal:
 
     def __init__(self):
-        self.metrics = {}
+        self.metrics = []
+        self.blocking = []
         self.readConfigurationParameters()
         self.summary = {"-ps": "Parsing SWIM ", "-e": "Extracting ",
                         "-pr": "Parsing RAW ", "-c":  "Classify metrics ",
@@ -74,9 +75,13 @@ class Principal:
             else:
                 fsize = parser.parsedfilesize/2
             radius = self.configurationParameters.communicationRadius
-            extractor = Extractor(filename, parser.maxT, parser.maxX,
-                                  parser.maxY, radius, fsize,
-                                  self.metrics, "-id" in args)
+            #extractor = Extractor(filename, parser.maxT, parser.maxX,
+            #                       parser.maxY, radius, fsize,
+            #                       self.metrics, "-id" in args)
+
+            m, b = self.metrics, self.blocking
+
+            extractor = Extractor2_0.Extractor(filename, m, "-id" in args, b)
             extractor.extract()
         return filename
 
@@ -116,7 +121,11 @@ class Principal:
                 line = line.strip().replace(" ", "")
                 if line[0] == "#":
                     continue
-                self.metrics[line] = True
+                if line[-1] == "*":
+                    line = line[0:-1]
+                    self.blocking.append(line)
+                else:
+                    self.metrics.append(line)
 
     def readConfigurationParameters(self):
         # TODO ler outro parametro do arquivo de configuracao
@@ -132,6 +141,8 @@ class Principal:
             cp = ConfigurationParameters()
             cp.recreateConfigurationFile()
 
-a = Principal()
-a.main(sys.argv[1:])
 
+
+if __name__ == "__main__":
+    a = Principal()
+    a.main(sys.argv[1:])

@@ -226,6 +226,20 @@ class Extractor:
                 else:
                     saida.write("{}\n".format(item))
 
+    
+    def printGeneric(self, name, struct):
+        with open(self.metricFiles[name], 'w') as saida:
+            for key, item in struct.items():
+                if self.REPORT_ID:
+                    if " " in key:
+                        key = key.split(" ")
+                        usr1, usr2 = key[0], key[1]
+                        strr = "{},{}".format(usr1, usr2)
+                    else:
+                        strr = "{}".format(key)
+                    strr += ",{}\n".format(item)
+                    saida.write(strr)
+
     def printTOPO(self):
         with open(self.metricFiles["TOPO"], 'w') as saida:
             for key, item in self.topo.items():
