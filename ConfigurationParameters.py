@@ -4,7 +4,7 @@ class ConfigurationParameters:
         pass
  
     def recreateConfigurationFile(self):
-        out = open('config.data','w')
+        out = open('config.txt','w')
         try:
             out.write("CommunicationRadius 10")
             out.close()
