@@ -41,7 +41,7 @@ class INCO(Metric):
                     incoEncounters = self.inco[enc]
                     w = float(self.graph.getEdgeWeight(user1, user2))
                     incoEncounters.append(float(comps[2]) - float(w))
-                    self.inco[enc].append(incoEncounters)
+                    self.inco[enc] = incoEncounters
 
                     self.graph.add_edge(user1, user2, float(comps[3]))
                 else:
