@@ -1,4 +1,5 @@
 class User:
+    """ Represents a user in the trace. """
 
     def __init__(self, id, x, y):
         self.id = id

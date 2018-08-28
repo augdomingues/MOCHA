@@ -2,12 +2,8 @@ from abc import abstractmethod, ABCMeta
 from time import time
 
 
-"""
-
-    An abstract class that represents a metric in MOCHA
-
-"""
 class Metric(metaclass=ABCMeta):
+""" An abstract class that represents a metric in MOCHA. """
 
     Metrics = {}
 
@@ -17,21 +13,26 @@ class Metric(metaclass=ABCMeta):
 
     @abstractmethod
     def print(self, *args, **kwargs):
+        """ Prints the metric to the output file. """
         pass
 
     @abstractmethod
     def extract(self, *args, **kwargs):
+        """ Performs the extraction of the metric. """
         pass
 
     @abstractmethod
     def explain(self, *args, **kwargs):
+        """ Provides a str that describes the metric. """
         pass
 
     @abstractmethod
     def commit(self, *args, **kwargs):
+        """ Returns the shared data between metrics """
         pass
 
     def timeexecution(func):
+        """ Measures the execution time of a function. """
         def wrapper(*args, **kwargs):
 
             # Extract time diff

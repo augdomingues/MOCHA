@@ -1,4 +1,5 @@
 class Cell:
+    """ Represents a cell where nodes can be within. """
 
     def __init__(self, k, l):
         self.k = k

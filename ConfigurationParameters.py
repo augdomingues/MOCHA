@@ -1,4 +1,5 @@
 class ConfigurationParameters:
+    """ Represents the configuration parameters for the trace parsing. """
 
     def __init__(self):
         pass

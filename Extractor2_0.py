@@ -8,6 +8,7 @@ import time
 
 
 class Extractor:
+    """ Class that performs the metrics' extraction steps. """
 
     def __init__(self, infile, metrics, reportID=False, blocking=[]):
         self.infile = infile
@@ -24,21 +25,20 @@ class Extractor:
         self.reportID = reportID
 
     def addFilesForFitting(self):
+        """ Adds fitted metrics to the fitted metrics file. """
         with open("filesForFitting.txt", "w+") as fit:
             for m in self.metrics:
                 fit.write("{}{}.txt\n".format(self.folder, m))
 
 
     def processMetric(self, m):
-
+        """ Process a given metric m. """
         outfile = "{}{}{}.txt".format(self.folder, os.sep, m)
 
         # Import module
         metricClass = __import__("Metrics.{}".format(m))
         metricClass = getattr(metricClass, m)
         metricClass = getattr(metricClass, m)
-        # metricClass = __import__(m)
-        # metricClass = getattr(metricClass, m)
 
         # Create object metric and extract
         obj = metricClass(self.infile, outfile, self.reportID, **self.kwargs)
@@ -60,19 +60,3 @@ class Extractor:
         for m in self.metrics:
             p = Process(target=self.processMetric, args=(m,))
             p.start()
-
-
-
-
-#for m in metrics:
-#    a = threading.Thread(target=process_metric, args=(m, ))
-#    a.start()
-#    a.join()
-
-#num_cores = multiprocessing.cpu_count()
-#num_cores = len(metrics)
-#print("Processing with {} cores".format(num_cores))
-#Parallel(n_jobs = num_cores)(delayed(process_metric)(m) for m in metrics)
-#Parallel(n_jobs = num_cores - 1)(delayed(mapMatching)(int(i)) for i in taxi_names)
-
-

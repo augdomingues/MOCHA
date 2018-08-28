@@ -36,6 +36,7 @@ class Principal:
         print("+-----------------------------------------------------------+")
 
     def validate_input(self, args):
+        """ Checks if the input parameters are valid. """
         valid_args = ["-ps", "-e", "-pr", "-c", "-id"]
         for i in range(0, len(args)-1):
             if "-" in args[i] and args[i] not in valid_args:
@@ -50,12 +51,14 @@ class Principal:
         return True
 
     def summarize(self, args):
+        """ Output the selected steps. """
         print("\n\t\t\t", end="")
         for i in range(0, len(args) - 1):
             print(self.summary[args[i]], end="")
         print("from {}\n".format(args[-1]))
 
     def parse(self, parser, args):
+        """ Parse the input trace file. """
         filename = ""
         if "-pr" in args:
             filename = parser.parseRaw(args[-1])
@@ -64,6 +67,7 @@ class Principal:
         return filename
 
     def extract(self, parser, extractor, args, filename):
+        """ Extracts the metrics from the parsed file. """
         if "-e" in args:
             self.readMetrics()
             # If the flag to parse is not provided,
@@ -75,9 +79,6 @@ class Principal:
             else:
                 fsize = parser.parsedfilesize/2
             radius = self.configurationParameters.communicationRadius
-            #extractor = Extractor(filename, parser.maxT, parser.maxX,
-            #                       parser.maxY, radius, fsize,
-            #                       self.metrics, "-id" in args)
 
             m, b = self.metrics, self.blocking
 
@@ -86,6 +87,7 @@ class Principal:
         return filename
 
     def classify(self, args, filename):
+        """ Classify the metrics by their statistical distributions. """
         # If user is running only the classifying module
         if filename == "":
             filename = args[-1]
@@ -110,6 +112,7 @@ class Principal:
             self.classify(args, filename)
 
     def readMetrics(self):
+        """ Read metrics from the metric selection file. """
         head = "INCO\nCODU\nSOCOR\nEDGEP\nTOPO\nRADG\nVIST\nTRVD\nSPAV\nCONEN"
         if not os.path.exists("metrics.txt"):
             with open("metrics.txt", "w+") as entrada:
