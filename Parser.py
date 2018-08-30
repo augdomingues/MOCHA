@@ -1,4 +1,4 @@
-import math
+from math import floor, ceil, sqrt
 import os
 from Encounter import Encounter
 from PositionEntry import PositionEntry
@@ -60,8 +60,8 @@ class Parser:
                 time = float(components[3])
 
                 self.maxT = int(max(time, self.maxT))
-                self.maxX = int(math.ceil(max(coordinateX, self.maxX)))
-                self.maxY = int(math.ceil(max(coordinateY, self.maxY)))
+                self.maxX = int(ceil(max(coordinateX, self.maxX)))
+                self.maxY = int(ceil(max(coordinateY, self.maxY)))
 
     """
         collectMaxes: look for the highest values for X,Y and time
@@ -82,10 +82,10 @@ class Parser:
                 coordinateXUser2 = float(components[7])
                 coordinateYUser2 = float(components[8])
 
-                self.maxX = math.ceil(max(coordinateXUser1, self.maxX))
-                self.maxX = math.ceil(max(coordinateXUser2, self.maxX))
-                self.maxY = math.ceil(max(coordinateYUser1, self.maxY))
-                self.maxY = math.ceil(max(coordinateYUser2, self.maxY))
+                self.maxX = ceil(max(coordinateXUser1, self.maxX))
+                self.maxX = ceil(max(coordinateXUser2, self.maxX))
+                self.maxY = ceil(max(coordinateYUser1, self.maxY))
+                self.maxY = ceil(max(coordinateYUser2, self.maxY))
                 self.maxT = max(time, self.maxT)
 
     def collectMaxesSwim(self, filename):
@@ -104,11 +104,106 @@ class Parser:
                 coordinateXUser2 = float(components[6])
                 coordinateYUser2 = float(components[7])
 
-                self.maxX = math.ceil(max(coordinateXUser1, self.maxX))
-                self.maxX = math.ceil(max(coordinateXUser2, self.maxX))
-                self.maxY = math.ceil(max(coordinateYUser1, self.maxY))
-                self.maxY = math.ceil(max(coordinateYUser2, self.maxY))
+                self.maxX = ceil(max(coordinateXUser1, self.maxX))
+                self.maxX = ceil(max(coordinateXUser2, self.maxX))
+                self.maxY = ceil(max(coordinateYUser1, self.maxY))
+                self.maxY = ceil(max(coordinateYUser2, self.maxY))
                 self.maxT = max(time, self.maxT)
+
+    def get_line(self, line):
+        l = line.strip().split(" ")
+        return [int(l[0]), float(l[1]), float(l[2]), float(l[3])]
+
+    def parse_raw(self, filename):
+        self.preParseRaw(filename)
+        cells = {}
+
+        g = Graph()
+        position_dict = {}
+        beginning_positions = {}
+        bar = Bar(self.filesize, "Parsing RAW file")
+
+        with open(self.generateFileName(filename), "w+") as out, \
+             open(filename, "r") as entrada:
+            new_lines = 0
+            for i, line in enumerate(entrada):
+                bar.progress()
+                _id, posx, posy, time = self.get_line(line)
+
+                #comps = line.split(" ")
+                #_id = int(comps[0])
+                #posx, posy = float(comps[1]), float(comps[2])
+                coordx, coordy = floor(posx/self.r), floor(posy/self.r)
+                #time = float(comps[3])
+
+                user = User(_id, posx, posy)
+                u1 = user.toString()
+                u1x, u1y = user.x, user.y
+
+                # This block adds a user to the map
+                if u1 not in position_dict:
+                    e = PositionEntry(posx, posy, coordx, coordy, time)
+                    position_dict[u1] = e
+                    g.add_vertex(u1)
+                    new_cell = Cell(coordx, coordy).toString()
+
+                    if new_cell not in cells:
+                        cells[new_cell] = []
+                    cells[new_cell].append(user)
+
+                # If the uses is already added, this block checks its location
+                else:
+                    entry = position_dict[u1]
+                    entryx, entryy = entry.positionX, entry.positionY
+
+                    if entryx != posx or entryy != posy:
+                        # The node moved
+                        old_cell = Cell(entry.coordX, entry.coordY).toString()
+
+                        users_in_cell = cells[old_cell]
+                        users_in_cell = self.removeUserFromCell(users_in_cell,
+                            u1)
+
+                        cells[old_cell] = users_in_cell
+
+                        old_user = User(_id, entryx, entryy)
+
+                        new_cell = Cell(coordx, coordy).toString()
+                        if new_cell not in cells:
+                            cells[new_cell] = []
+                        cells[new_cell].append(user)
+
+                    del position_dict[u1]
+                        # Why checking the dist if its already inside the radius?
+                        # This step is repeating the step below
+                        # Its possibly adding the same contacts repeated
+
+                #After adding or updating user, this block adds contacts
+                for c in cells.keys():
+                    users_in_cell = cells[c]
+                    for user2 in users_in_cell:
+                        u2 = user2.toString()
+                        u2x, u2y = user2.x, user2.y
+
+                        if u1 != u2:
+                            dist = self.euclidean(u1x, u1y, u2x, u2y)
+                            e = Encounter(int(u1), int(u2))
+                            e = e.toString()
+                            if dist <= self.r:
+                                if not g.containsEdge(u1,u2):
+                                    pos = "{} {} {} {}".format(u1x, u1y, u2x, u2y)
+                                    beginning_positions[e] = pos
+                                g.add_edge(u1, u2, time)
+                                g.add_edge(u2, u1, time)
+
+                            elif g.containsEdge(u1, u2):
+                                begin = beginning_positions[e]
+                                entry = self.generateEntry(user, user2,
+                                    time, g, begin)
+                                out.write(entry)
+                                g.remove_edge(u1, u2)
+                                g.remove_edge(u2, u1)
+        bar.finish()
 
     def parseRaw(self, filename):
         self.preParseRaw(filename)
@@ -126,8 +221,8 @@ class Parser:
                     _id = int(components[0])
                     posX = float(components[1])
                     posY = float(components[2])
-                    coordX = math.floor(posX / self.r)
-                    coordY = math.floor(posY / self.r)
+                    coordX = floor(posX / self.r)
+                    coordY = floor(posY / self.r)
                     time = float(components[3])
 
                     user = User(_id, posX, posY)
@@ -268,7 +363,6 @@ class Parser:
         return self.generateFileName(filename)
 
     def removeUserFromCell(self, usersInCell, id):
-
         toBeRemoved = User(0, 0, 0)
         for user in usersInCell:
             if (user.toString() == id):
@@ -302,10 +396,10 @@ class Parser:
     def getAdjacentCellUsers(self, cells, user, r):
         adjacent = []
 
-        k = math.floor(user.x / r)
+        k = floor(user.x / r)
         rangeXBegin = k - 1 if k - 1 > 0 else 0
 
-        l = math.floor(user.x / r)
+        l = floor(user.x / r)
         rangeYBegin = l - 1 if l - 1 > 0 else 0
 
         while rangeXBegin <= k + 1:
@@ -322,7 +416,7 @@ class Parser:
         return adjacent
 
     def euclidean(self, xi, yi, xj, yj):
-        return math.sqrt(((xi - xj) ** 2) + ((yi - yj) ** 2))
+        return sqrt(((xi - xj) ** 2) + ((yi - yj) ** 2))
 
     def parseNS2(self, filename):
         self.collectMaxesNS2(filename)

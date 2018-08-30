@@ -3,7 +3,7 @@ from time import time
 
 
 class Metric(metaclass=ABCMeta):
-""" An abstract class that represents a metric in MOCHA. """
+    """ An abstract class that represents a metric in MOCHA. """
 
     Metrics = {}
 

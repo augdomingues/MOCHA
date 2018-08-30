@@ -61,7 +61,7 @@ class Principal:
         """ Parse the input trace file. """
         filename = ""
         if "-pr" in args:
-            filename = parser.parseRaw(args[-1])
+            filename = parser.parse_raw(args[-1])
         elif "-ps" in args:
             filename = parser.parseSwim(args[-1])
         return filename
