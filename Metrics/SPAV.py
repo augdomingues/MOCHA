@@ -19,6 +19,8 @@ class SPAV(Metric):
         self.maxY = 0
         self.maxT = 0
 
+        self.cache_locations = {}
+
     def print(self):
         with open(self.outfile, "w+") as out:
             for key, item in self.usersVenues.items():
@@ -105,23 +107,42 @@ class SPAV(Metric):
 
                 time = float(comps[4])
 
-                distanceToCloser1 = distanceToCloser2 = math.inf 
-                user1Venue = user2Venue = 0
+                distanceToCloser1 = distanceToCloser2 = math.inf
+                user1Venue = user2Venue = -1
 
-                for i in range(0, len(self.venues)):
+                # Set the keys as the locations
+                key1 = "{} {}".format(user1X, user1Y)
+                key2 = "{} {}".format(user2X, user2Y)
+                # Check if any of the keys are in the locations cache
+                # If so, use the cached location
+                cached1 = key1 in self.cache_locations
+                cached2 = key2 in self.cache_locations
+                if cached1:
+                    user1Venue = self.cache_locations[key1]
+                if cached2:
+                    user2Venue = self.cache_locations[key2]
 
-                    venX, venY = [float(c) for c in self.venues[i].split(" ")]
-                    dist = self.euclidean((user1X, user1Y), (venX, venY))
+                if not cached1 or not cached2:
+                    for i in range(0, len(self.venues)):
 
-                    if dist < distanceToCloser1:
-                        distanceToCloser1 = dist
-                        user1Venue = i
+                        vx, vy = [float(c) for c in self.venues[i].split(" ")]
 
-                    dist = self.euclidean((user1X, user1Y), (venX, venY))
+                        if not cached1:
+                            dist = self.euclidean((user1X, user1Y), (vx, vy))
+                            if dist < distanceToCloser1:
+                                distanceToCloser1 = dist
+                                user1Venue = i
 
-                    if dist < distanceToCloser2:
-                        distanceToCloser2 = dist
-                        user2Venue = i
+                        if not cached2:
+                            dist = self.euclidean((user1X, user1Y), (vx, vy))
+                            if dist < distanceToCloser2:
+                                distanceToCloser2 = dist
+                                user2Venue = i
+
+                    # Cache locations selected to users positions
+                    self.cache_locations[key1] = user1Venue
+                    self.cache_locations[key2] = user2Venue
+
 
                 if user1 in self.usersVenues:
                     value = self.usersVenues[user1].get(user1Venue, 0)
@@ -147,5 +168,6 @@ class SPAV(Metric):
 
     def commit(self):
         values = {"venues": self.venues, "locations": self.locations,
-                  "maxX": self.maxX, "maxY": self.maxY, "maxT": self.maxT}
+                  "maxX": self.maxX, "maxY": self.maxY, "maxT": self.maxT,
+                  "cache_locations": self.cache_locations}
         return values

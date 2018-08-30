@@ -14,6 +14,9 @@ class RADG(Metric):
         self.reportID = reportID
         self.venues = kwargs.get("venues")
 
+        # Get the cached locations
+        self.cache_locations = kwargs.get("cache_locations")
+
     def print(self):
         with open(self.outfile, "w+") as out:
             for key, item in self.radius.items():
@@ -29,8 +32,8 @@ class RADG(Metric):
         closest = 0
 
         for k, item in self.venues.items():
-            venueLocX, venueLocY = item.split(" ")
-            distance = self.euclidean((x, y), (venueLocX, venueLocY))
+            vx, vy = item.split(" ")
+            distance = self.euclidean((x, y), (vx, vy))
 
             if distance < minimum:
                 minimum = distance
@@ -50,7 +53,14 @@ class RADG(Metric):
                 comps = line.strip().split(" ")
                 user1 = comps[0]
                 user1X, user1Y = comps[5], comps[6]
-                user1Location = self.getClosestVenue(user1X, user1Y)
+
+                # Check the user position in the cached locations
+                key1 = "{} {}".format(user1X, user1Y)
+                if key1 in self.cache_locations:
+                    user1Location = self.cache_locations[key1]
+                    user1Location = self.venues[user1Location]
+                else:
+                    user1Location = self.getClosestVenue(user1X, user1Y)
 
                 if user1 not in self.userHomes:
                     self.userHomes[user1] = Home(user1Location, 1)
@@ -66,7 +76,14 @@ class RADG(Metric):
 
                 user2 = comps[1]
                 user2X, user2Y = comps[7], comps[8]
-                user2Location = self.getClosestVenue(user2X, user2Y)
+
+                # Check user2 position in the cached locations
+                key2 = "{} {}".format(user2X, user2Y)
+                if key2 in self.cache_locations:
+                    user2Location = self.cache_locations[key2]
+                    user2Location = self.venues[user2Location]
+                else:
+                    user2Location = self.getClosestVenue(user2X, user2Y)
 
                 if user2 not in self.userHomes:
                     self.userHomes[user2] = Home(user2Location, 1)

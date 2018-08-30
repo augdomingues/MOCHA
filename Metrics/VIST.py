@@ -12,8 +12,11 @@ class VIST(Metric):
         self.venues = kwargs["venues"]
         self.locations = kwargs["locations"]
 
+        #Get the cached locations
+        self.cache_locations = kwargs["cache_locations"]
+
     def print(self):
-        with open(self.outfile, "w+") as out: 
+        with open(self.outfile, "w+") as out:
             for key, item in self.vist.items():
                 if self.reportID:
                     out.write("{},".format(key))
@@ -36,21 +39,39 @@ class VIST(Metric):
                 time = float(comps[4])
 
                 distanceToCloser1 = distanceToCloser2 = math.inf
-                user1Venue = user2Venue = 0
+                user1Venue = user2Venue = -1
 
-                for i in range(0, len(self.venues)):
-                    venX, venY = [float(c) for c in self.venues[i].split(" ")]
-                    dist = self.euclidean( (user1X, user1Y), (venX, venY))
+                # Get the cached location
+                key1 = "{} {}".format(user1X, user1Y)
+                key2 = "{} {}".format(user2X, user2Y)
 
-                    if dist < distanceToCloser1:
-                        distanceToCloser1 = dist
-                        user1Venue = i
+                cache1 = key1 in self.cache_locations
+                cache2 = key2 in self.cache_locations
 
-                    dist = self.euclidean( (user2X, user2Y), (venX, venY))
+                if cache1:
+                    user1Venue = self.cache_locations[key1]
+                if cache2:
+                    user2Venue = self.cache_locations[key2]
 
-                    if dist < distanceToCloser2:
-                        distanceToCloser2 = dist
-                        user2Venue = i
+                if not cache1 or not cache2:
+                    for i in range(0, len(self.venues)):
+                        vx, vy = [float(c) for c in self.venues[i].split(" ")]
+
+                        if not cache1:
+                            dist = self.euclidean((user1X, user1Y), (vx, vy))
+                            if dist < distanceToCloser1:
+                                distanceToCloser1 = dist
+                                user1Venue = i
+
+                        if not cache2:
+                            dist = self.euclidean((user2X, user2Y), (vx, vy))
+                            if dist < distanceToCloser2:
+                                distanceToCloser2 = dist
+                                user2Venue = i
+
+                    self.cache_locations[key1] = user1Venue
+                    self.cache_locations[key2] = user2Venue
+
 
                 if user1 in self.vist:
                     visitTime = self.vist[user1].get(user1Venue, 0.0)
