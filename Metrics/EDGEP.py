@@ -1,6 +1,6 @@
 from Metrics.Metric import Metric
 import math
-from Encounter import Encounter
+from Mocha_utils import Encounter
 
 class EDGEP(Metric):
 
@@ -17,9 +17,8 @@ class EDGEP(Metric):
             for key, item in self.edgep.items():
                 if self.reportID:
                     user1, user2 = key.split(" ")
-                    out.write("{},{},{}\n".format(user1, user2, item))
-                else:
-                    out.write("{}\n".format(item))
+                    out.write("{},{},".format(user1, user2))
+                out.write("{}\n".format(item))
 
     @Metric.timeexecution
     def extract(self):

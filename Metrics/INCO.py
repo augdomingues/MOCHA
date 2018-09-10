@@ -2,7 +2,7 @@ from Metrics.Metric import Metric
 from Graph import Graph
 from Graph import Vertex
 from Graph import Edge
-from Encounter import Encounter
+from Mocha_utils import Encounter
 
 class INCO(Metric):
 

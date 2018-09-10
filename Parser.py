@@ -1,4 +1,5 @@
 from math import floor, ceil, sqrt
+from operator import itemgetter
 import os
 from Mocha_utils import (
         Encounter,
@@ -165,6 +166,8 @@ class Parser:
             # At this point, the trace has ended, but we still need to close
             # open contacts.
 
+            # We add to a vector to sort by starting time
+            last_contacts = []
             # We dont want to modify the dict while parsing it, so:
             reported = dict()
             for _id, contact in contacts.items():
@@ -178,11 +181,16 @@ class Parser:
                         s = "{} {} ".format(_id, other_id)
                         s += "{} {} {} ".format(begin, time, duration)
                         s += "{} {} ".format(begin_x, begin_y)
-                        s += "{} {}".format(begin_xo, begin_yo)
-                        saida.write(s)
+                        s += "{} {}\n".format(begin_xo, begin_yo)
+                        last_contacts.append((s, begin))
 
                         reported[(_id, other_id)] = True
                         reported[(other_id, _id)] = True
+
+            last_contacts = sorted(last_contacts, key=itemgetter(1))
+
+            for lc in last_contacts:
+                saida.write(lc[0])
         bar.finish()
 
     def parseRaw(self, filename):

@@ -1,6 +1,6 @@
 from Metrics.Metric import Metric
 import math
-from TravelPair import TravelPair
+from Mocha_utils import TravelPair
 
 class TRVD(Metric):
 

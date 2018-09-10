@@ -1,6 +1,6 @@
 from Metrics.Metric import Metric
 from Graph import Graph
-from Encounter import Encounter
+from Mocha_utils import Encounter
 
 class TOPO(Metric):
 
@@ -65,7 +65,7 @@ class TOPO(Metric):
                 denominator = 1
 
             toPct = numerator/denominator
-            self.topo[enc] = toPct
+            self.topo[enc] = 0 if toPct == -1 else toPct
 
     def commit(self):
         values = {"TOPO": self.topo}
