@@ -32,8 +32,8 @@ class Parser:
                     comps = line.strip().split(" ")
                     comps = self.removeEmpty(comps)
                     encounter = Encounter(comps[2], comps[3])
-                    if encounter.toString() in encounters:
-                        e = encounters[encounter.toString()]
+                    if str(encounter) in encounters:
+                        e = encounters[str(encounter)]
                         self.parsedfilesize += 1
                         out.write("{} {} ".format(comps[2], comps[3]))
                         out.write("{} {} ".format(comps[3], e))
@@ -41,7 +41,7 @@ class Parser:
                         out.write("{} {} ".format(comps[4], comps[5]))
                         out.write("{} ".format(comps[6]))
                         out.write("{}\n".format(comps[7]))
-                    encounters[encounter.toString()] = float(comps[0])
+                    encounters[str(encounter)] = float(comps[0])
         bar.finish()
         return newFile
 
@@ -137,7 +137,7 @@ class Parser:
                 #time = float(comps[3])
 
                 user = User(_id, posx, posy)
-                u1 = user.toString()
+                u1 = str(user)
                 u1x, u1y = user.x, user.y
 
                 # This block adds a user to the map
@@ -145,7 +145,7 @@ class Parser:
                     e = PositionEntry(posx, posy, coordx, coordy, time)
                     position_dict[u1] = e
                     g.add_vertex(u1)
-                    new_cell = Cell(coordx, coordy).toString()
+                    new_cell = str(Cell(coordx, coordy))
 
                     if new_cell not in cells:
                         cells[new_cell] = []
@@ -158,7 +158,7 @@ class Parser:
 
                     if entryx != posx or entryy != posy:
                         # The node moved
-                        old_cell = Cell(entry.coordX, entry.coordY).toString()
+                        old_cell = str(Cell(entry.coordX, entry.coordY))
 
                         users_in_cell = cells[old_cell]
                         users_in_cell = self.removeUserFromCell(users_in_cell,
@@ -168,7 +168,7 @@ class Parser:
 
                         old_user = User(_id, entryx, entryy)
 
-                        new_cell = Cell(coordx, coordy).toString()
+                        new_cell = str(Cell(coordx, coordy))
                         if new_cell not in cells:
                             cells[new_cell] = []
                         cells[new_cell].append(user)
@@ -182,13 +182,13 @@ class Parser:
                 for c in cells.keys():
                     users_in_cell = cells[c]
                     for user2 in users_in_cell:
-                        u2 = user2.toString()
+                        u2 = str(user2)
                         u2x, u2y = user2.x, user2.y
 
                         if u1 != u2:
                             dist = self.euclidean(u1x, u1y, u2x, u2y)
                             e = Encounter(int(u1), int(u2))
-                            e = e.toString()
+                            e = str(e)
                             if dist <= self.r:
                                 if not g.containsEdge(u1,u2):
                                     pos = "{} {} {} {}".format(u1x, u1y, u2x, u2y)
@@ -226,7 +226,7 @@ class Parser:
                     time = float(components[3])
 
                     user = User(_id, posX, posY)
-                    u1 = user.toString()
+                    u1 = str(user)
                     u1x, u1y = user.x, user.y
 
                     try:
@@ -235,25 +235,25 @@ class Parser:
                         if entryX != posX or entryY != posY:
                             # The node moved
                             oldCell = Cell(entry.coordX, entry.coordY)
-                            usrInCell = cells[oldCell.toString()]
+                            usrInCell = cells[str(oldCell)]
                             usrInCell = self.removeUserFromCell(usrInCell, u1)
-                            cells[oldCell.toString()] = usrInCell
+                            cells[str(oldCell)] = usrInCell
                             oldUser = User(_id, entryX, entryY)
                             r = self.r
                             adj = self.getAdjacentCellUsers(cells, oldUser, r)
                             newCell = Cell(coordX, coordY)
                             try:
-                                usrInCell = cells[newCell.toString()]
+                                usrInCell = cells[str(newCell)]
                                 usrInCell.append(user)
-                                cells[newCell.toString()] = usrInCell
+                                cells[str(newCell)] = usrInCell
                             except:
                                 usrInCell = []
                                 usrInCell.append(user)
-                                cells[newCell.toString()] = usrInCell
+                                cells[str(newCell)] = usrInCell
 
                             for user2 in adjacent:
                                 u2x, u2y = user2.x, user2.y
-                                u2 = user2.toString()
+                                u2 = str(user2)
                                 euc = self.euclidean(u1x, u1y, u2x, u2y)
                                 if euc <= self.r:
                                     vert1 = g.get_vertex(u1)
@@ -270,14 +270,14 @@ class Parser:
                                         g.add_edge(u1, u2, time)
                                         g.add_edge(u2, u1, time)
                                         encounter = Encounter(int(u1), int(u2))
-                                        enc = encounter.toString()
+                                        enc = str(encounter)
                                         pos = str(u1x) + " " + str(u1y) + " "
                                         pos += str(u2x) + " " + str(u2y)
                                         beginingPositions[enc] = pos
 
                                 elif (g.containsEdge(u1, u2)):
                                     encounter = Encounter(int(u1), int(u2))
-                                    enc = encounter.toString()
+                                    enc = str(encounter)
                                     beginPos = beginingPositions[enc]
                                     out.write(self.generateEntry(user, user2,
                                                                  time, g,
@@ -297,13 +297,13 @@ class Parser:
 
                         newCell = Cell(coordX, coordY)
                         try:
-                            usersInCell = cells[newCell.toString()]
+                            usersInCell = cells[str(newCell)]
                             usersInCell.append(user)
-                            cells[newCell.toString()] = usersInCell
+                            cells[str(newCell)] = usersInCell
                         except:
                             usersInCell = []
                             usersInCell.append(user)
-                            cells[newCell.toString()] = usersInCell
+                            cells[str(newCell)] = usersInCell
 
                     rangeXBegin = 0
                     if (coordX - 1 > 0):
@@ -317,11 +317,11 @@ class Parser:
                         while (rangeYBegin <= coordY + 1):
                             newCell = Cell(rangeXBegin, rangeYBegin)
                             try:
-                                u1 = user.toString()
+                                u1 = str(user)
                                 u1x, u1y = user.x, user.y
-                                usersInCell = cells[newCell.toString()]
+                                usersInCell = cells[str(newCell)]
                                 for user2 in usersInCell:
-                                    u2 = user2.toString()
+                                    u2 = str(user2)
                                     u2x, u2y = user2.x, user2.y
                                     if (u1 != u2):
                                         eu = self.euclidean(u1x, u1y, u2x, u2y)
@@ -333,14 +333,14 @@ class Parser:
                                                 g.add_edge(u1, u2, time)
                                                 g.add_edge(u2, u1, time)
                                                 e = Encounter(int(u1), int(u2))
-                                                enc = e.toString()
+                                                enc = str(e)
                                                 pos = str(u1x) + " " + str(u1y)
                                                 pos += " " + str(u2x) + " "
                                                 pos += str(u2y)
                                                 beginingPositions[enc] = pos
                                         elif (g.containsEdge(u1, u2)):
                                             e = Encounter(int(u1), int(u2))
-                                            enc = e.toString()
+                                            enc = str(e)
                                             beginPos = beginingPositions[enc]
                                             out.write(self.generateEntry(user,
                                                       user2, time,
@@ -365,7 +365,7 @@ class Parser:
     def removeUserFromCell(self, usersInCell, id):
         toBeRemoved = User(0, 0, 0)
         for user in usersInCell:
-            if (user.toString() == id):
+            if (str(user) == id):
                 toBeRemoved = user
         usersInCell.remove(toBeRemoved)
         return usersInCell
@@ -387,7 +387,7 @@ class Parser:
         return filename
 
     def generateEntry(self, user, user2, time, g, beginingPosition):
-        w = g.getEdgeWeight(user.toString(), user2.toString())
+        w = g.getEdgeWeight(str(user), str(user2))
         entry = "{} {} ".format(user.id, user2.id)
         entry += "{} {} {} ".format(time, w, (time - w))
         entry += "{}\n".format(beginingPosition)
@@ -405,10 +405,10 @@ class Parser:
         while rangeXBegin <= k + 1:
             while rangeYBegin <= l + 1:
                 newCell = Cell(rangeXBegin, rangeYBegin)
-                if newCell.toString() in cells:
-                    usersInCell = cells[newCell.toString()]
+                if str(newCell) in cells:
+                    usersInCell = cells[str(newCell)]
                     for u2 in usersInCell:
-                        if (user.toString() != u2.toString()):
+                        if (str(user) != str(u2)):
                             if self.euclidean(user.x, user.y, u2.x, u2.y) <= r:
                                 adjacent.append(u2)
                 rangeYBegin += 1

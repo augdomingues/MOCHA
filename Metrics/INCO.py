@@ -37,7 +37,7 @@ class INCO(Metric):
 
                 if self.graph.containsEdge(user1, user2):
                     enc = Encounter(int(user1), int(user2))
-                    enc = enc.toString()
+                    enc = str(enc)
                     incoEncounters = self.inco[enc]
                     w = float(self.graph.getEdgeWeight(user1, user2))
                     incoEncounters.append(float(comps[2]) - float(w))
@@ -49,7 +49,7 @@ class INCO(Metric):
                     self.graph.add_vertex(user2)
 
                     encounter = Encounter(int(user1), int(user2))
-                    encounter = encounter.toString()
+                    encounter = str(encounter)
                     self.inco[encounter] = []
                     self.graph.add_edge(user1, user2, float(comps[3]))
 

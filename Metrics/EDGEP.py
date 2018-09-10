@@ -28,7 +28,7 @@ class EDGEP(Metric):
                 comps = line.strip().split(" ")
                 encounterDay = int(math.floor(float(comps[3]) / 86400))
                 encounter = Encounter(int(comps[0]), int(comps[1]))
-                enc = encounter.toString()
+                enc = str(encounter)
 
                 value = self.edgep.get(enc, 0)
                 day = self.encounters.get(enc, -1)

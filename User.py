@@ -6,11 +6,10 @@ class User:
         self.x = x
         self.y = y
 
-    def compareTo(self, o):
-        if self.id == o.id and self.x == o.x and self.y == o.y:
+    def __eq__(self, other):
+        if self.id == other.id and self.x == other.x and self.y == other.y:
             return 0
-        else:
-            return 1
+        return 1
 
-    def toString(self):
-        return str(self.id)
+    def __str__(self):
+        return "{}".format(self.id)

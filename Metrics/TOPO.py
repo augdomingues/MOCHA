@@ -39,7 +39,7 @@ class TOPO(Metric):
         for edge in edges:
             src = edge.src
             trg = edge.target
-            enc = Encounter(int(src), int(trg)).toString()
+            enc = str(Encounter(int(src), int(trg)))
 
 
             if enc not in self.totalNeighbors:

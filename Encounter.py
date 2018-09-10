@@ -5,9 +5,9 @@ class Encounter:
         self.id1 = int(id1)
         self.id2 = int(id2)
 
-    def toString(self):
+    def __str__(self):
         """ Returns the encounter as a string. """
-        if self.id1 < self.id2:
-            return str(self.id1) + " " + str(self.id2)
-        else:
-            return str(self.id2) + " " + str(self.id1)
+        higher = max(self.id1, self.id2)
+        lower = min(self.id1, self.id2)
+
+        return "{} {}".format(higher, lower)

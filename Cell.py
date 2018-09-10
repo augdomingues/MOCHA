@@ -5,10 +5,10 @@ class Cell:
         self.k = k
         self.l = l
 
-    def compareTo(self, o):
-        if self.k == o.k and self.l == o.l:
+    def __eq__(self, other):
+        if self.k == other.k and self.l == other.l:
             return 0
         return 1
 
-    def toString(self):
-        return str(self.k) + " " + str(self.l)
+    def __str__(self):
+        return "{} {}".format(self.k, self.l)
