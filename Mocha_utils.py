@@ -13,6 +13,19 @@ class Cell:
     def __str__(self):
         return "{} {}".format(self.k, self.l)
 
+class PositionReport:
+    def __init__(self, x, y, t):
+        self.x, self.y, self.t = x, y ,y
+
+    def euclidean(self, xj, yj):
+        e = ((self.x - xj) ** 2) + ((self.y - yj) **2)
+        e = e**(1/2)
+        return e
+
+    def __sub__(self, other):
+        return self.euclidean(other.x , other.y)
+
+
 class Encounter:
     """ Represents an encounter between two nodes. """
 

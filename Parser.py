@@ -3,6 +3,7 @@ import os
 from Mocha_utils import (
         Encounter,
         PositionEntry,
+        PositionReport,
         Cell,
         User
         )
@@ -116,95 +117,72 @@ class Parser:
         l = line.strip().split(" ")
         return [int(l[0]), float(l[1]), float(l[2]), float(l[3])]
 
-    def parse_raw(self, filename):
+    def naive_raw(self, filename):
+        radius = self.r
+        contacts = dict()
+        positions = dict()
         self.preParseRaw(filename)
-        cells = {}
-
-        g = Graph()
-        position_dict = {}
-        beginning_positions = {}
-        bar = Bar(self.filesize, "Parsing RAW file")
-
-        with open(self.generateFileName(filename), "w+") as out, \
+        with open(self.generateFileName(filename), "w+") as saida, \
              open(filename, "r") as entrada:
-            new_lines = 0
+
+            bar = Bar(self.filesize, "Parsing RAW file")
             for i, line in enumerate(entrada):
                 bar.progress()
-                _id, posx, posy, time = self.get_line(line)
+                _id, x, y, time = self.get_line(line)
 
-                #comps = line.split(" ")
-                #_id = int(comps[0])
-                #posx, posy = float(comps[1]), float(comps[2])
-                coordx, coordy = floor(posx/self.r), floor(posy/self.r)
-                #time = float(comps[3])
+                if _id not in contacts:
+                    contacts[_id] = dict()
 
-                user = User(_id, posx, posy)
-                u1 = str(user)
-                u1x, u1y = user.x, user.y
+                node_position = PositionReport(x, y, time)
+                positions[_id] = node_position
 
-                # This block adds a user to the map
-                if u1 not in position_dict:
-                    e = PositionEntry(posx, posy, coordx, coordy, time)
-                    position_dict[u1] = e
-                    g.add_vertex(u1)
-                    new_cell = str(Cell(coordx, coordy))
+                for other_id, item in positions.items():
+                    if other_id != _id:
+                        contact_exists = other_id in contacts[_id]
+                        contact_exists = contact_exists or _id in contacts[other_id]
 
-                    if new_cell not in cells:
-                        cells[new_cell] = []
-                    cells[new_cell].append(user)
+                        # Beginning a new contact
+                        if node_position - item <= radius and not contact_exists:
+                            contacts[_id][other_id] = (time, x, y, item.x, item.y)
+                            contacts[other_id][_id] = (time, item.x, item.y, x, y)
 
-                # If the uses is already added, this block checks its location
-                else:
-                    entry = position_dict[u1]
-                    entryx, entryy = entry.positionX, entry.positionY
+                        # Ending an existing contact
+                        elif node_position - item > radius and contact_exists:
+                            c = contacts[_id][other_id]
+                            begin, begin_x, begin_y, begin_xo, begin_yo = c
 
-                    if entryx != posx or entryy != posy:
-                        # The node moved
-                        old_cell = str(Cell(entry.coordX, entry.coordY))
+                            duration = time - begin
 
-                        users_in_cell = cells[old_cell]
-                        users_in_cell = self.removeUserFromCell(users_in_cell,
-                            u1)
+                            s = "{} {} ".format(_id, other_id)
+                            s += "{} {} {} ".format(begin, time, duration)
+                            s += "{} {} ".format(begin_x, begin_y)
+                            s += "{} {}\n".format(begin_xo, begin_yo)
+                            saida.write(s)
 
-                        cells[old_cell] = users_in_cell
+                            del contacts[_id][other_id]
+                            del contacts[other_id][_id]
 
-                        old_user = User(_id, entryx, entryy)
+            # At this point, the trace has ended, but we still need to close
+            # open contacts.
 
-                        new_cell = str(Cell(coordx, coordy))
-                        if new_cell not in cells:
-                            cells[new_cell] = []
-                        cells[new_cell].append(user)
+            # We dont want to modify the dict while parsing it, so:
+            reported = dict()
+            for _id, contact in contacts.items():
+                for other_id, report in contact.items():
 
-                    del position_dict[u1]
-                        # Why checking the dist if its already inside the radius?
-                        # This step is repeating the step below
-                        # Its possibly adding the same contacts repeated
+                    if (_id, other_id) not in reported:
+                        begin, begin_x, begin_y, begin_xo, begin_yo = report
 
-                #After adding or updating user, this block adds contacts
-                for c in cells.keys():
-                    users_in_cell = cells[c]
-                    for user2 in users_in_cell:
-                        u2 = str(user2)
-                        u2x, u2y = user2.x, user2.y
+                        duration = time - begin
 
-                        if u1 != u2:
-                            dist = self.euclidean(u1x, u1y, u2x, u2y)
-                            e = Encounter(int(u1), int(u2))
-                            e = str(e)
-                            if dist <= self.r:
-                                if not g.containsEdge(u1,u2):
-                                    pos = "{} {} {} {}".format(u1x, u1y, u2x, u2y)
-                                    beginning_positions[e] = pos
-                                g.add_edge(u1, u2, time)
-                                g.add_edge(u2, u1, time)
+                        s = "{} {} ".format(_id, other_id)
+                        s += "{} {} {} ".format(begin, time, duration)
+                        s += "{} {} ".format(begin_x, begin_y)
+                        s += "{} {}".format(begin_xo, begin_yo)
+                        saida.write(s)
 
-                            elif g.containsEdge(u1, u2):
-                                begin = beginning_positions[e]
-                                entry = self.generateEntry(user, user2,
-                                    time, g, begin)
-                                out.write(entry)
-                                g.remove_edge(u1, u2)
-                                g.remove_edge(u2, u1)
+                        reported[(_id, other_id)] = True
+                        reported[(other_id, _id)] = True
         bar.finish()
 
     def parseRaw(self, filename):
@@ -421,19 +399,7 @@ class Parser:
         return sqrt(((xi - xj) ** 2) + ((yi - yj) ** 2))
 
     def parseNS2(self, filename):
-        self.collectMaxesNS2(filename)
-        out = open(self.generateFileName(filename), 'w')
-
-        i = 0
-        print("Parsing file!\n")
-        with open(filename) as entrada:
-            for line in entrada:
-                i += 1
-                components = line.split(" ")
-
-        out.close()
-        return self.generateFileName(filename)
+        pass
 
     def collectMaxesNS2(self, filename):
         pass
-        # TODO Auto-generated method stub

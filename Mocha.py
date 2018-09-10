@@ -1,6 +1,5 @@
 from ConfigurationParameters import ConfigurationParameters
 from Parser import Parser
-from Extractor import Extractor
 from Classifier import Classifier
 import sys
 import os
@@ -61,7 +60,7 @@ class Principal:
         """ Parse the input trace file. """
         filename = ""
         if "-pr" in args:
-            filename = parser.parse_raw(args[-1])
+            filename = parser.naive_raw(args[-1])
         elif "-ps" in args:
             filename = parser.parseSwim(args[-1])
         return filename
@@ -138,7 +137,8 @@ class Principal:
                 line = entrada.readline()
                 line = line.split(" ")
                 radius = float(line[1])
-                self.configurationParameters.communicationRadius = radius
+                self.configurationParameters.communicationRadius = radius * 1000
+                print("Radius is: {}".format(radius))
         else:
             print("Configuration file not found! Recreating!")
             cp = ConfigurationParameters()

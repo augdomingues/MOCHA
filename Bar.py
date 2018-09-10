@@ -34,7 +34,7 @@ class Bar:
         elapsed = time.time() - self.starting_time
         elapsed = self.format_time(elapsed)
         elapsed = " [{}]".format(elapsed)
-        print("\r{:<55} {}{}{}".format(self.info, out, rate, elapsed), end="")
+        print("\r{:<25} {}{}{}".format(self.info, out, rate, elapsed), end="")
 
     def format_time(self, time):
         hour = 0
