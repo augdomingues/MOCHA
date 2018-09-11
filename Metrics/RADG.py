@@ -1,17 +1,21 @@
+"""
+    This module extracts the Radius of Gyration (RADG) metric for each
+    node in the trace.
+"""
+import math
 from Metrics.Metric import Metric
 from Mocha_utils import Home
-import math
 
 
 class RADG(Metric):
+    """ RADG extraction class. """
 
-
-    def __init__(self, infile, outfile, reportID, **kwargs):
+    def __init__(self, infile, outfile, report_id, **kwargs):
         self.infile = infile
         self.outfile = outfile
-        self.userHomes = {}
+        self.user_homes = {}
         self.radius = {}
-        self.reportID = reportID
+        self.report_id = report_id
         self.venues = kwargs.get("venues")
 
         # Get the cached locations
@@ -20,14 +24,15 @@ class RADG(Metric):
     def print(self):
         with open(self.outfile, "w+") as out:
             for key, item in self.radius.items():
-                if self.reportID:
+                if self.report_id:
                     out.write("{},".format(key))
                 out.write("{}\n".format(item))
 
     def explain(self):
         return "RADG"
 
-    def getClosestVenue(self, x, y):
+    def get_closest_venue(self, x, y):
+        """ Returns the closest venue to a point. """
         minimum = math.inf
         closest = 0
 
@@ -42,12 +47,14 @@ class RADG(Metric):
         return self.venues[closest]
 
     def euclidean(self, x, y):
-        e = sum([(float(a) - float(b)) ** 2 for a, b in zip(x, y)])
-        e = math.sqrt(e)
-        return e
+        """ Returns the euclidean distance between two points. """
+        euclidean = sum([(float(a) - float(b)) ** 2 for a, b in zip(x, y)])
+        euclidean = math.sqrt(euclidean)
+        return euclidean
 
     @Metric.timeexecution
-    def extractHome(self):
+    def extract_home(self):
+        """ Finds the home of a user. """
         with open(self.infile, "r") as inn:
             for line in inn:
                 comps = line.strip().split(" ")
@@ -60,19 +67,19 @@ class RADG(Metric):
                     user1Location = self.cache_locations[key1]
                     user1Location = self.venues[user1Location]
                 else:
-                    user1Location = self.getClosestVenue(user1X, user1Y)
+                    user1Location = self.get_closest_venue(user1X, user1Y)
 
-                if user1 not in self.userHomes:
-                    self.userHomes[user1] = Home(user1Location, 1)
+                if user1 not in self.user_homes:
+                    self.user_homes[user1] = Home(user1Location, 1)
                 else:
-                    location = self.userHomes[user1].location
-                    degree = self.userHomes[user1].degree
+                    location = self.user_homes[user1].location
+                    degree = self.user_homes[user1].degree
                     if location == user1Location:
-                        self.userHomes[user1].degree += 1
+                        self.user_homes[user1].degree += 1
                     elif degree == 0:
-                        self.userHomes[user1] = Home(user1Location, 1)
+                        self.user_homes[user1] = Home(user1Location, 1)
                     else:
-                        self.userHomes[user1].degree -= 1
+                        self.user_homes[user1].degree -= 1
 
                 user2 = comps[1]
                 user2X, user2Y = comps[7], comps[8]
@@ -83,47 +90,47 @@ class RADG(Metric):
                     user2Location = self.cache_locations[key2]
                     user2Location = self.venues[user2Location]
                 else:
-                    user2Location = self.getClosestVenue(user2X, user2Y)
+                    user2Location = self.get_closest_venue(user2X, user2Y)
 
-                if user2 not in self.userHomes:
-                    self.userHomes[user2] = Home(user2Location, 1)
+                if user2 not in self.user_homes:
+                    self.user_homes[user2] = Home(user2Location, 1)
                 else:
-                    location = self.userHomes[user2].location
-                    degree = self.userHomes[user2].degree
+                    location = self.user_homes[user2].location
+                    degree = self.user_homes[user2].degree
                     if location == user2Location:
-                        self.userHomes[user2].degree += 1
+                        self.user_homes[user2].degree += 1
                     elif degree == 0:
-                        self.userHomes[user2] = Home(user2Location, 1)
+                        self.user_homes[user2] = Home(user2Location, 1)
                     else:
-                        self.userHomes[user2].degree -= 1
+                        self.user_homes[user2].degree -= 1
 
     @Metric.timeexecution
     def extract(self):
-        self.extractHome()
+        self.extract_home()
         with open(self.infile, "r") as inn:
             for line in inn:
                 comps = line.strip().split(" ")
                 user1, user2 = comps[0], comps[1]
 
-                user1X, user1Y = comps[5], comps[6]
-                user2X, user2Y = comps[7], comps[8]
+                user1_X, user1_Y = comps[5], comps[6]
+                user2_X, user2_Y = comps[7], comps[8]
 
-                user1Home = self.userHomes[user1].location
-                user1HomeX, user1HomeY = user1Home.split(" ")
-                user2Home = self.userHomes[user2].location
-                user2HomeX, user2HomeY = user1Home.split(" ")
+                user1_Home = self.user_homes[user1].location
+                user1_HomeX, user1_HomeY = user1_Home.split(" ")
+                user2_Home = self.user_homes[user2].location
+                user2_HomeX, user2_HomeY = user2_Home.split(" ")
 
-                user1Dist = self.euclidean((user1X, user1Y), (user1HomeX,
-                                           user1HomeY))
+                user1_Dist = self.euclidean((user1_X, user1_Y), (user1_HomeX,
+                                           user1_HomeY))
 
-                user2Dist = self.euclidean((user2X, user2Y), (user2HomeX,
-                                           user2HomeY))
+                user2_Dist = self.euclidean((user2_X, user2_Y), (user2_HomeX,
+                                           user2_HomeY))
 
                 currentValue = self.radius.get(user1, 0)
-                self.radius[user1] = max(currentValue, user1Dist)
+                self.radius[user1] = max(currentValue, user1_Dist)
 
                 currentValue = self.radius.get(user2, 0)
-                self.radius[user2] = max(currentValue, user2Dist)
+                self.radius[user2] = max(currentValue, user2_Dist)
 
 
     def commit(self):

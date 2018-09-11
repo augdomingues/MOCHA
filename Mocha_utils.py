@@ -1,3 +1,9 @@
+"""
+    This module contains inumerous structures that are used by MOCHA
+    in its processing steps.
+"""
+
+
 class Cell:
     """ Represents a cell where nodes can be within. """
 
@@ -14,16 +20,18 @@ class Cell:
         return "{} {}".format(self.k, self.l)
 
 class PositionReport:
+    """ Represents a time and location in which a node is in. """
     def __init__(self, x, y, t):
-        self.x, self.y, self.t = x, y ,y
+        self.x, self.y, self.t = x, y, t
 
     def euclidean(self, xj, yj):
-        e = ((self.x - xj) ** 2) + ((self.y - yj) **2)
-        e = e**(1/2)
-        return e
+        """ Computes the euclidian distance between two points. """
+        euclidean = ((self.x - xj) ** 2) + ((self.y - yj) **2)
+        euclidean = euclidean**(1/2)
+        return euclidean
 
     def __sub__(self, other):
-        return self.euclidean(other.x , other.y)
+        return self.euclidean(other.x, other.y)
 
 
 class Encounter:
@@ -55,6 +63,9 @@ class Location:
         self.visitTime = vt
 
 class PositionEntry:
+    """ Represents a position of a node in a time. Similar to PositionEntry
+        but used for different purposes.
+    """
 
     def __init__(self, positionX, positionY, coordX, coordY, time):
         self.positionX = positionX
@@ -85,4 +96,3 @@ class User:
 
     def __str__(self):
         return "{}".format(self.id)
-

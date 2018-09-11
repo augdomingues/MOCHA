@@ -1,20 +1,24 @@
+"""
+    This module extracts the Contact Duration (CODU) for all the
+    pairs of contacts in the trace.
+"""
 from Metrics.Metric import Metric
 
 class CODU(Metric):
+    """ Contact Duration Extraction class. """
 
-
-    def __init__(self, infile, outfile, reportID, **kwargs):
+    def __init__(self, infile, outfile, report_id, **kwargs):
         self.codu = {}
         self.infile = infile
         self.outfile = outfile
-        self.reportID = reportID
+        self.report_id = report_id
         self.kwargs = kwargs
 
     def print(self):
         with open(self.outfile, "w+") as out:
             for key, item in self.codu.items():
                 for diff in item:
-                    if self.reportID:
+                    if self.report_id:
                         out.write("{},{},".format(key[0], key[1]))
                     out.write("{}\n".format(diff))
 

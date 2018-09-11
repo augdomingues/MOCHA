@@ -1,6 +1,13 @@
+"""
+    Module that contains the implementation of a graphic.
+    Will soon be replaced by networkx.
+"""
+
+
 class Vertex:
     """ Class that represents a node (Vertex) in the graph. """
     def __init__(self, node):
+        """ Initiates vertex structures. """
         self.id = node
         self.adjacent = {}
 
@@ -29,7 +36,12 @@ class Edge:
         self.weight = weight
 
     def get_weight(self):
+        """ Return edge weight. """
         return self.weight
+
+    def set_weight(self, weight):
+        """ Set new edge weight. """
+        self.weight = weight
 
 
 class Graph:
@@ -44,36 +56,36 @@ class Graph:
         self.vert_dict[node] = new_vertex
         return new_vertex
 
-    def get_vertex(self, n):
+    def get_vertex(self, node):
         """ Return a given node n. """
-        return self.vert_dict[n]
+        return self.vert_dict[node]
 
-    def remove_edge(self, frm, to):
+    def remove_edge(self, origin, destiny):
         """  Remove edge between two nodes. """
-        if (frm, to) in self.edges:
-            del self.edges[((frm, to))]
+        if (origin, destiny) in self.edges:
+            del self.edges[((origin, destiny))]
 
-    def add_edge(self, frm, to, cost=0):
+    def add_edge(self, origin, destiny, cost=0):
         """ Add weighted edge between two nodes. """
-        if frm not in self.vert_dict:
-            self.add_vertex(frm)
-        if to not in self.vert_dict:
-            self.add_vertex(to)
+        if origin not in self.vert_dict:
+            self.add_vertex(origin)
+        if destiny not in self.vert_dict:
+            self.add_vertex(destiny)
 
-        if (frm, to) not in self.edges:
-            edge = Edge(frm, to, cost)
-            self.edges[(frm, to)] = edge
+        if (origin, destiny) not in self.edges:
+            edge = Edge(origin, destiny, cost)
+            self.edges[(origin, destiny)] = edge
 
-        self.vert_dict[frm].add_neighbor(self.vert_dict[to], cost)
-        self.vert_dict[to].add_neighbor(self.vert_dict[frm], cost)
+        self.vert_dict[origin].add_neighbor(self.vert_dict[destiny], cost)
+        self.vert_dict[destiny].add_neighbor(self.vert_dict[origin], cost)
 
     def get_vertices(self):
         """ Returns the set of nodes in the graph. """
         return self.vert_dict.keys()
 
-    def containsEdge(self, user1, user2):
+    def contains_edge(self, user1, user2):
         """
-            containsEdge: checks if the graph has edge between node user1 and user2
+            contains_edge: checks if the graph has edge between node user1 and user2
             params:
                 user1: origin node (frm)
                 user2: destination node (to)
@@ -82,27 +94,24 @@ class Graph:
         """
         return (user1, user2) in self.edges
 
-    def getEdgeWeight(self, user1, user2):
+    def get_edge_weight(self, user1, user2):
         """
-            getEdgeWeight: returns the weight of the edge
+            get_edge_weight: returns the weight of the edge
             params:
                 user1: origin node (frm)
                 user2: destination node (to)
             returns:
                 edge weight if existent; -1 otherwise
         """
-        if self.containsEdge(user1, user2):
+        if self.contains_edge(user1, user2):
             return self.edges[(user1, user2)].get_weight()
-        else:
-            return -1
+        return -1
 
-    def edgeSet(self):
+    def edge_set(self):
         """
-            edgeSet: returns a vector containing all the edges
+            edge_set: returns a vector containing all the edges
             params:
-
             returns:
                 a vector containing all the edges
         """
         return [item for item in self.edges.values()]
-

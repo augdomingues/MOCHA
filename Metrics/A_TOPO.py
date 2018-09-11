@@ -1,24 +1,28 @@
+"""
+    This module extracts the average Topological Overlap (TOPO) for
+    every node in the trace.
+"""
 from Metrics.Metric import Metric
 from Graph import Graph
 from Mocha_utils import Encounter
 
 class A_TOPO(Metric):
+    """ Average TOPO extraction class. """
 
-
-    def __init__(self, infile, outfile, reportID, **kwargs):
+    def __init__(self, infile, outfile, report_id, **kwargs):
         self.topo = {}
         self.a_topo = {}
         self.graph = Graph()
-        self.totalNeighbors = {}
+        self.total_neighbors = {}
         self.infile = infile
         self.outfile = outfile
-        self.reportID = reportID
+        self.report_id = report_id
 
 
     def print(self):
         with open(self.outfile, "w+") as out:
             for key, item in self.a_topo.items():
-                if self.reportID:
+                if self.report_id:
                     out.write("{},".format(key))
                 out.write("{}\n".format(item))
 
@@ -32,35 +36,35 @@ class A_TOPO(Metric):
                 self.graph.add_vertex(user1)
                 self.graph.add_vertex(user2)
 
-                if not self.graph.containsEdge(user1, user2):
+                if not self.graph.contains_edge(user1, user2):
                     self.graph.add_edge(user1, user2)
 
-        edges = self.graph.edgeSet()
+        edges = self.graph.edge_set()
         for edge in edges:
             src = edge.src
             trg = edge.target
             enc = str(Encounter(int(src), int(trg)))
 
 
-            if enc not in self.totalNeighbors:
-                self.totalNeighbors[enc] = []
+            if enc not in self.total_neighbors:
+                self.total_neighbors[enc] = []
 
-            neighborsSrc = self.graph.get_vertex(src).get_connections()
-            degreeSrc = len(neighborsSrc)
+            neighbors_src = self.graph.get_vertex(src).get_connections()
+            degree_src = len(neighbors_src)
 
-            neighborsTrg = self.graph.get_vertex(src).get_connections()
-            degreeDest = len(neighborsTrg)
+            neighbors_trgt = self.graph.get_vertex(src).get_connections()
+            degree_dest = len(neighbors_trgt)
 
             exists = 0
-            if self.graph.containsEdge(src, trg):
+            if self.graph.contains_edge(src, trg):
                 exists = 1
 
             to = 0
-            for t in neighborsTrg:
-                if t in neighborsSrc:
+            for t in neighbors_trgt:
+                if t in neighbors_src:
                     to += 1
             numerator = float(to) + 1
-            denominator = ((degreeSrc - exists) + (degreeDest - exists) -to) +1
+            denominator = ((degree_src - exists) + (degree_dest - exists) -to) +1
             if denominator == 0:
                 denominator = 1
 
@@ -87,4 +91,3 @@ class A_TOPO(Metric):
 
     def explain(self):
         return "Average TOPO"
-

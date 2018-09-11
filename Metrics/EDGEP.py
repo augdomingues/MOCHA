@@ -1,21 +1,26 @@
-from Metrics.Metric import Metric
+"""
+    This module extracts the Edge persistence (EDGEP) for
+    each pair of contacts in the trace.
+
+"""
 import math
+from Metrics.Metric import Metric
 from Mocha_utils import Encounter
 
 class EDGEP(Metric):
+    """ EDGEP extraction class. """
 
-
-    def __init__(self, infile, outfile, reportID, **kwargs):
+    def __init__(self, infile, outfile, report_id, **kwargs):
         self.edgep = {}
         self.encounters = {}
         self.infile = infile
         self.outfile = outfile
-        self.reportID = reportID
+        self.report_id = report_id
 
     def print(self):
         with open(self.outfile, 'w') as out:
             for key, item in self.edgep.items():
-                if self.reportID:
+                if self.report_id:
                     user1, user2 = key.split(" ")
                     out.write("{},{},".format(user1, user2))
                 out.write("{}\n".format(item))
@@ -25,16 +30,16 @@ class EDGEP(Metric):
         with open(self.infile, "r") as inn:
             for line in inn:
                 comps = line.strip().split(" ")
-                encounterDay = int(math.floor(float(comps[3]) / 86400))
+                encounter_day = int(math.floor(float(comps[3]) / 86400))
                 encounter = Encounter(int(comps[0]), int(comps[1]))
                 enc = str(encounter)
 
                 value = self.edgep.get(enc, 0)
                 day = self.encounters.get(enc, -1)
 
-                if day != encounterDay:
+                if day != encounter_day:
                     self.edgep[enc] = value + 1
-                    self.encounters[enc] = encounterDay
+                    self.encounters[enc] = encounter_day
 
     def commit(self):
         values = {"EDGEP": self.edgep}

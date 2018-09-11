@@ -1,3 +1,7 @@
+"""
+    This module defines an abstract metric that can be inherited
+    to produce metrics for the MOCHA framework.
+"""
 from abc import abstractmethod, ABCMeta
 from time import time
 
@@ -49,5 +53,3 @@ class Metric(metaclass=ABCMeta):
 
             print("{} took {} seconds".format(name, diff))
         return wrapper
-
-

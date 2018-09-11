@@ -1,16 +1,21 @@
-import subprocess
+"""
+    Class to classify metrics according to their statistical distributions
+"""
 import os
 import math
 import warnings
 import numpy as np
 import scipy.stats as st
-import sys
 from Bar import Bar
 
 
 class Classifier:
+    """
+        Class to classify metrics according to their statistical distributions
+    """
 
     def __init__(self, filename):
+        """ Initiate structures in the class. """
         self.files = ["CODU", "INCO", "EDGEP",
                       "TOPO", "RADG", "VIST", "TRVD", "SPAV", "CONEN"]
         self.barra = os.sep
@@ -18,7 +23,8 @@ class Classifier:
         self.filename += "_metrics_folder{}".format(self.barra)
         self.metrics = {}
 
-    def best_fit_distribution(self, data, filename, bins=200, ax=None):
+    def best_fit_distribution(self, data, filename, bins=200):
+        """ Computes and returns the distribution that best fits the data. """
         y, x = np.histogram(data, bins=bins, density=True)
         x = (x + np.roll(x, -1))[:-1] / 2.0
 
@@ -34,7 +40,7 @@ class Classifier:
         else:
             metric = filename
 
-        bar = Bar(len(DISTRIBUTIONS), "Fitting {}".format(metric))
+        progressbar = Bar(len(DISTRIBUTIONS), "Fitting {}".format(metric))
         for distribution in DISTRIBUTIONS:
             warnings.filterwarnings('ignore')
             params = distribution.fit(data)
@@ -52,14 +58,15 @@ class Classifier:
             print(" SSE of {} is {}(Current best: {})"
                   .format(distribution.name, round(sse, 2),
                           round(best_sse, 2)), end="")
-            bar.progress()
+            progressbar.progress()
 
         print(" Fit to {} with params [{}]".format(best_distribution.name,
-              best_params), end="")
-        bar.finish()
+                                                   best_params), end="")
+        progressbar.finish()
         return (best_distribution.name, best_params)
 
     def classify(self):
+        """ Open the metrics to classify them. """
         with open("{}fittedMetrics.txt".format(self.filename), "w+") as saida:
             for f in self.files:
                 f = "{}{}.txt".format(self.filename, f)
@@ -68,14 +75,14 @@ class Classifier:
                     if data is None:
                         continue
                     if len(data) == 0:
-                        input("File '{}' is empty. Press Enter to proceed to next metric. ".format(f))
+                        input("File '{}' is empty. Press Enter to proceed. ".format(f))
                         continue
                     # Remove the IDs if they exist
                     if len(data.shape) == 2:
                         data = data[:, 1]
                     name, params = self.best_fit_distribution(data, f)
-                    metricName = f
-                    saida.write("{},{},{}\n".format(metricName, name, params))
-                    self.metrics[metricName] = (name, params)
+                    metric_name = f
+                    saida.write("{},{},{}\n".format(metric_name, name, params))
+                    self.metrics[metric_name] = (name, params)
         return self.metrics
 

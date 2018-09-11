@@ -1,20 +1,24 @@
+"""
+    Extracts the average Contact Duration (CODU) for each node.
+
+"""
 from Metrics.Metric import Metric
 
 class A_CODU(Metric):
+    """ Average CODU extraction class. """
 
-
-    def __init__(self, infile, outfile, reportID, **kwargs):
+    def __init__(self, infile, outfile, report_id, **kwargs):
         self.codu = {}
         self.a_codu = {}
         self.infile = infile
         self.outfile = outfile
-        self.reportID = reportID
+        self.report_id = report_id
         self.kwargs = kwargs
 
     def print(self):
         with open(self.outfile, "w+") as out:
             for key, item in self.a_codu.items():
-                if self.reportID:
+                if self.report_id:
                     out.write("{},".format(key))
                 out.write("{}\n".format(item))
 
@@ -43,4 +47,3 @@ class A_CODU(Metric):
 
     def commit(self):
         return {}
-

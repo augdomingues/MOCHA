@@ -1,24 +1,30 @@
-from Metrics.Metric import Metric
+"""
+    This module extracts the Travel Distance (TRVD) metric for
+    each node in the trace.
+"""
 import math
+from Metrics.Metric import Metric
 from Mocha_utils import TravelPair
 
 class TRVD(Metric):
+    """ TRVD extraction class. """
 
-    def __init__(self, infile, outfile, reportID, **kwargs):
+    def __init__(self, infile, outfile, report_id, **kwargs):
         self.trvd = {}
         self.infile = infile
         self.outfile = outfile
-        self.reportID = reportID
+        self.report_id = report_id
         self.kwargs = kwargs
 
     def print(self):
         with open(self.outfile, "w+") as out:
             for key, item in self.trvd.items():
-                if self.reportID:
+                if self.report_id:
                     out.write("{},".format(key))
                 out.write("{}\n".format(item))
 
     def euclidean(self, x, y):
+        """ Computes the euclidean distance between two points. """
         return math.sqrt(sum([(float(a) - float(b)) ** 2 for a, b in zip(x, y)]))
 
     @Metric.timeexecution
@@ -28,32 +34,32 @@ class TRVD(Metric):
                 comps = line.strip().split(" ")
                 user1, user2 = comps[0], comps[1]
 
-                user1X, user1Y = comps[5], comps[6]
+                user1_x, user1_y = comps[5], comps[6]
 
-                user2X, user2Y = comps[7], comps[8]
+                user2_x, user2_y = comps[7], comps[8]
 
                 if user1 in self.trvd:
                     curr = self.trvd[user1][-1].location
-                    currX, currY = curr.split(" ")
+                    curr_x, curr_y = curr.split(" ")
 
-                    distance = self.euclidean((user1X, user1Y), (currX, currY))
+                    distance = self.euclidean((user1_x, user1_y), (curr_x, curr_y))
 
-                    tp = TravelPair(user1X + " " + user1Y, distance)
-                    self.trvd[user1].append(tp)
+                    travel_pair = TravelPair(user1_x + " " + user1_y, distance)
+                    self.trvd[user1].append(travel_pair)
                 else:
-                    tp = TravelPair(user1X + " " + user1Y, 0.0)
-                    self.trvd[user1] = [tp]
+                    travel_pair = TravelPair(user1_x + " " + user1_y, 0.0)
+                    self.trvd[user1] = [travel_pair]
 
                 if user2 in self.trvd:
                     curr = self.trvd[user2][-1].location
-                    currX, currY = curr.split(" ")
+                    curr_x, curr_y = curr.split(" ")
 
-                    distance = self.euclidean((user2X, user2Y), (currX, currY))
+                    distance = self.euclidean((user2_x, user2_y), (curr_x, curr_y))
 
-                    tp = TravelPair(user2X + " " + user2Y, distance)
+                    travel_pair = TravelPair(user2_x + " " + user2_y, distance)
                 else:
-                    tp = TravelPair(user2X + " " + user2Y, 0.0)
-                    self.trvd[user2] = [tp]
+                    travel_pair = TravelPair(user2_x + " " + user2_y, 0.0)
+                    self.trvd[user2] = [travel_pair]
 
         for key, item in self.trvd.items():
             total = sum([t.distance for t in item])

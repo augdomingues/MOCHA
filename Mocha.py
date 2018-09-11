@@ -1,22 +1,26 @@
+"""
+    This module contains the main class that executes the MOCHA framework.
+"""
+import sys
+import os
 from ConfigurationParameters import ConfigurationParameters
 from Parser import Parser
 from Classifier import Classifier
-import sys
-import os
-from Bar import Bar
 import Extractor2_0
 
 class Principal:
 
     def __init__(self):
+        """ Initiate class structures. """
         self.metrics = []
         self.blocking = []
-        self.readConfigurationParameters()
+        self.read_configuration_parameters()
         self.summary = {"-ps": "Parsing SWIM ", "-e": "Extracting ",
                         "-pr": "Parsing RAW ", "-c":  "Classify metrics ",
                         "-id": "Report users' ID "}
 
     def usage(self):
+        """ Visual guidance of how to use MOCHA. """
         print("+-----------------------------------------------------------+")
         print("|                                                           |")
         print("|    ( (                                                    |")
@@ -25,7 +29,7 @@ class Principal:
         print("| ,-\___/-.                                                 |")
         print("| `-------'                                                 |")
         print("|                                                           |")
-        print("| Usage: Principal.py [-pr, -ps, -e, -c, -id] filename      |")
+        print("| Usage: Mocha.py [-pr, -ps, -e, -c, -id] filename      |")
         print("|                                                           |")
         print("| ['-pr', '-ps', '-e']: Parse (RAW), Parse (SWIM) , Extract |")
         print("| [ '-c' ]      : Classify distributions                    |")
@@ -62,26 +66,16 @@ class Principal:
         if "-pr" in args:
             filename = parser.naive_raw(args[-1])
         elif "-ps" in args:
-            filename = parser.parseSwim(args[-1])
+            filename = parser.parse_swim(args[-1])
         return filename
 
-    def extract(self, parser, extractor, args, filename):
+    def extract(self, extractor, args, filename):
         """ Extracts the metrics from the parsed file. """
         if "-e" in args:
-            self.readMetrics()
-            # If the flag to parse is not provided,
-            # then the parsed file is the one passed as input
-            if "-pr" not in args and "-ps" not in args:
-                filename = args[-1]
-                parser.collectMaxes(filename)
-                fsize = parser.filesize
-            else:
-                fsize = parser.parsedfilesize/2
-            radius = self.configurationParameters.communicationRadius
-
-            m, b = self.metrics, self.blocking
-
-            extractor = Extractor2_0.Extractor(filename, m, "-id" in args, b)
+            self.read_metrics()
+            metrics, blocking = self.metrics, self.blocking
+            has_id = "-id" in args
+            extractor = Extractor2_0.Extractor(filename, metrics, has_id, blocking)
             extractor.extract()
         return filename
 
@@ -95,7 +89,8 @@ class Principal:
             classifier.classify()
 
     def main(self, args):
-        self.readConfigurationParameters()
+        """ Main method that calls each step."""
+        self.read_configuration_parameters()
         parser = None
         extractor = None
         if self.validate_input(args):
@@ -105,12 +100,12 @@ class Principal:
             filename = self.parse(parser, args)
 
             # Extract characteristics
-            filename = self.extract(parser, extractor, args, filename)
+            filename = self.extract(extractor, args, filename)
 
             # Classify characteristics
             self.classify(args, filename)
 
-    def readMetrics(self):
+    def read_metrics(self):
         """ Read metrics from the metric selection file. """
         head = "INCO\nCODU\nSOCOR\nEDGEP\nTOPO\nRADG\nVIST\nTRVD\nSPAV\nCONEN"
         if not os.path.exists("metrics.txt"):
@@ -129,8 +124,8 @@ class Principal:
                 else:
                     self.metrics.append(line)
 
-    def readConfigurationParameters(self):
-        # TODO ler outro parametro do arquivo de configuracao
+    def read_configuration_parameters(self):
+        """ Read the config parameters from the file. If it not exist, create it. """
         if os.path.exists("config.txt"):
             with open("config.txt", "r") as entrada:
                 self.configurationParameters = ConfigurationParameters()
@@ -141,11 +136,11 @@ class Principal:
                 print("Radius is: {}".format(radius))
         else:
             print("Configuration file not found! Recreating!")
-            cp = ConfigurationParameters()
-            cp.recreateConfigurationFile()
+            config_parameters = ConfigurationParameters()
+            config_parameters.recreateConfigurationFile()
 
 
 
 if __name__ == "__main__":
-    a = Principal()
-    a.main(sys.argv[1:])
+    MOCHA = Principal()
+    MOCHA.main(sys.argv[1:])
