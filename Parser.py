@@ -155,7 +155,7 @@ class Parser:
                             duration = time - begin
 
                             s = "{} {} ".format(_id, other_id)
-                            s += "{} {} {} ".format(begin, time, duration)
+                            s += "{} {} {} ".format(time, begin, duration)
                             s += "{} {} ".format(begin_x, begin_y)
                             s += "{} {}\n".format(begin_xo, begin_yo)
                             saida.write(s)
@@ -179,7 +179,7 @@ class Parser:
                         duration = time - begin
 
                         s = "{} {} ".format(_id, other_id)
-                        s += "{} {} {} ".format(begin, time, duration)
+                        s += "{} {} {} ".format(time, begin, duration)
                         s += "{} {} ".format(begin_x, begin_y)
                         s += "{} {}\n".format(begin_xo, begin_yo)
                         last_contacts.append((s, begin))
