@@ -53,7 +53,7 @@ class Extractor:
 
 
     def extract(self):
-        self.blocking_metrics = ["SPAV", "TOPO", "EDGEP"]
+        # self.blocking_metrics = ["SPAV", "TOPO", "EDGEP"]
         for b in self.blocking_metrics:
             self.processMetric(b)
 
