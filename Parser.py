@@ -34,8 +34,8 @@ class Parser:
     def parse_swim(self, filename):
         """ Parse a SWIM trace. """
         self.collect_maxes_swim(filename)
-        newFile = self.generate_filename(filename)
-        with open(newFile, 'w') as out:
+        output_file = self.generate_filename(filename)
+        with open(output_file, 'w') as out:
             encounters = {}
             bar = Bar(self.filesize, "Parsing SWIM file")
             with open(filename, 'r') as entrada:
@@ -55,7 +55,7 @@ class Parser:
                         out.write("{}\n".format(comps[7]))
                     encounters[str(encounter)] = float(comps[0])
         bar.finish()
-        return newFile
+        return output_file
 
     def remove_empty(self, components):
         """ Remove empty fields in the line. """
@@ -63,6 +63,9 @@ class Parser:
 
     def pre_parse_raw(self, filename):
         """ Prepare a raw trace to be parsed. """
+
+        last_reported_time = -1
+
         with open(filename, 'r') as entrada:
             print("Pre parsing...", end="")
             for line in entrada:
@@ -72,6 +75,12 @@ class Parser:
                 coordinateX = float(components[1])
                 coordinateY = float(components[2])
                 time = float(components[3])
+
+                if time < last_reported_time:
+                    print(" Error. Unsorted trace!")
+                    raise SystemError(0)
+
+                last_reported_time = time
 
                 self.maxT = int(max(time, self.maxT))
                 self.maxX = int(ceil(max(coordinateX, self.maxX)))
@@ -126,11 +135,14 @@ class Parser:
 
     def naive_raw(self, filename):
         """ Parse a raw trace not considering the cells. """
+        self.pre_parse_raw(filename)
+
         radius = self.r
         contacts = dict()
         positions = dict()
-        self.pre_parse_raw(filename)
-        with open(self.generate_filename(filename), "w+") as saida, \
+
+        output_filename = self.generate_filename(filename)
+        with open(output_filename, "w+") as saida, \
              open(filename, "r") as entrada:
 
             bar = Bar(self.filesize, "Parsing RAW file")
@@ -199,6 +211,7 @@ class Parser:
             for lc in last_contacts:
                 saida.write(lc[0])
         bar.finish()
+        return output_filename
 
     def parse_raw(self, filename):
         """ Parse a raw trace considering the cells. """
@@ -369,6 +382,7 @@ class Parser:
 
     def generate_filename(self, filename):
         """ Generates the filename for the parsed trace. """
+
         filename = os.path.abspath(filename)
         if "." in filename:
             name, extension = filename.split(".")[0], filename.split(".")[1]
@@ -377,9 +391,9 @@ class Parser:
             filename = "{}_parsed".format(filename)
 
         if os.path.exists(filename):
-            ow = input("\nFile already exists. Overwrite it? (y/n): ")
-            ow = ow.upper()
-            if ow not in ["TRUE", "Y", "YES"]:
+            overwrite = input("\nFile already exists. Overwrite it? (y/n): ")
+            overwrite = overwrite.upper()
+            if overwrite not in ["TRUE", "Y", "YES"]:
                 raise SystemExit(0)
 
         return filename
