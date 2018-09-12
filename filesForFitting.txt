@@ -1,0 +1,7 @@
+trace_infocom05_41nodes3_metrics_folder/CONEN.txt
+trace_infocom05_41nodes3_metrics_folder/RADG.txt
+trace_infocom05_41nodes3_metrics_folder/INCO.txt
+trace_infocom05_41nodes3_metrics_folder/CODU.txt
+trace_infocom05_41nodes3_metrics_folder/TRVD.txt
+trace_infocom05_41nodes3_metrics_folder/VIST.txt
+trace_infocom05_41nodes3_metrics_folder/SOCOR.txt
