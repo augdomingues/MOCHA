@@ -4,7 +4,7 @@
 """
 from Metrics.Metric import Metric
 from Graph import Graph
-from Mocha_utils import Encounter
+from mocha_utils import Encounter
 
 class TOPO(Metric):
     """ TOPO extraction class. """

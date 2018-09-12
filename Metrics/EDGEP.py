@@ -5,7 +5,7 @@
 """
 import math
 from Metrics.Metric import Metric
-from Mocha_utils import Encounter
+from mocha_utils import Encounter
 
 class EDGEP(Metric):
     """ EDGEP extraction class. """

@@ -4,7 +4,7 @@
 """
 import math
 from Metrics.Metric import Metric
-from Mocha_utils import Encounter
+from mocha_utils import Encounter
 
 class A_EDGEP(Metric):
     """ Average EDGEP extraction class. """

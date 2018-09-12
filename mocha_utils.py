@@ -24,9 +24,9 @@ class PositionReport:
     def __init__(self, x, y, t):
         self.x, self.y, self.t = x, y, t
 
-    def euclidean(self, xj, yj):
+    def euclidean(self, coord_xj, coord_yj):
         """ Computes the euclidian distance between two points. """
-        euclidean = ((self.x - xj) ** 2) + ((self.y - yj) **2)
+        euclidean = ((self.x - coord_xj) ** 2) + ((self.y - coord_yj) **2)
         euclidean = euclidean**(1/2)
         return euclidean
 
@@ -63,7 +63,7 @@ class Location:
         self.visitTime = vt
 
 class PositionEntry:
-    """ Represents a position of a node in a time. Similar to PositionEntry
+    """ Represents a position of a node in a time. Similar to PositionReport
         but used for different purposes.
     """
 
@@ -80,6 +80,12 @@ class TravelPair:
     def __init__(self, string, distance):
         self.distance = distance
         self.location = string
+
+    def get_distance(self):
+        return self.distance
+
+    def get_location(self):
+        return self.location
 
 class User:
     """ Represents a user in the trace. """

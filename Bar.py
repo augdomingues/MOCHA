@@ -41,20 +41,20 @@ class Bar:
         elapsed = " [{}]".format(elapsed)
         print("\r{:<25} {}{}{}".format(self.info, out, rate, elapsed), end="")
 
-    def format_time(self, t):
+    def format_time(self, timestamp):
         """ Format the time from timestamp to hh:mm:ss. """
         hour = 0
         minute = 0
         seconds = 0
-        if t > 3600:
-            while t >= 3600:
+        if timestamp > 3600:
+            while timestamp >= 3600:
                 hour += 1
-                t -= 3600
-        if t > 60:
-            while t >= 60:
+                timestamp -= 3600
+        if timestamp > 60:
+            while timestamp >= 60:
                 minute += 1
-                t -= 60
-        seconds = math.floor(t)
+                timestamp -= 60
+        seconds = math.floor(timestamp)
         hour = "0" + str(hour) if hour < 10 else hour
         minute = "0" + str(minute) if minute < 10 else minute
         seconds = "0" + str(seconds) if seconds < 10 else seconds

@@ -6,7 +6,7 @@ import os
 from ConfigurationParameters import ConfigurationParameters
 from Parser import Parser
 from Classifier import Classifier
-import Extractor2_0
+import extractor
 
 class Principal:
 
@@ -75,8 +75,8 @@ class Principal:
             self.read_metrics()
             metrics, blocking = self.metrics, self.blocking
             has_id = "-id" in args
-            extractor = Extractor2_0.Extractor(filename, metrics, has_id, blocking)
-            extractor.extract()
+            extract = extractor.Extractor(filename, metrics, has_id, blocking)
+            extract.extract()
         return filename
 
     def classify(self, args, filename):

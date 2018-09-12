@@ -9,7 +9,7 @@
 from math import floor, ceil, sqrt
 from operator import itemgetter
 import os
-from Mocha_utils import (
+from mocha_utils import (
     Encounter,
     PositionEntry,
     PositionReport,

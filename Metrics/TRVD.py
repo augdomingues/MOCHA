@@ -4,7 +4,7 @@
 """
 import math
 from Metrics.Metric import Metric
-from Mocha_utils import TravelPair
+from mocha_utils import TravelPair
 
 class TRVD(Metric):
     """ TRVD extraction class. """
