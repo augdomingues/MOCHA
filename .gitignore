@@ -1,0 +1,12 @@
+# Ignore pycache files
+.pyc
+# Ignore csv files (traces)
+.csv
+# Ignore images
+.png
+.jpg
+.jpeg
+# Ignore compressed files
+.zip
+.gz
+.bzip
