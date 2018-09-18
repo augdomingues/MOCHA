@@ -75,7 +75,7 @@ class Classifier:
                     if data is None:
                         continue
                     if len(data) == 0:
-                        input("File '{}' is empty. Press Enter to proceed. ".format(f))
+                        input("File '{}' empty. [Enter] to proceed.".format(f))
                         continue
                     # Remove the IDs if they exist
                     if len(data.shape) == 2:
@@ -85,4 +85,3 @@ class Classifier:
                     saida.write("{},{},{}\n".format(metric_name, name, params))
                     self.metrics[metric_name] = (name, params)
         return self.metrics
-

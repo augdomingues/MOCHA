@@ -8,6 +8,7 @@ from Parser import Parser
 from Classifier import Classifier
 from extractor import Extractor
 
+
 class Principal:
     """ Main class for the MOCHA project. """
 
@@ -120,7 +121,7 @@ class Principal:
                     self.metrics.append(line)
 
     def read_configuration_parameters(self):
-        """ Read the config parameters from the file. If it not exist, create it. """
+        """ Read the config parameters from the file. If not exist, create. """
         if os.path.exists("config.txt"):
             with open("config.txt", "r") as entrada:
                 self.configurationParameters = ConfigurationParameters()

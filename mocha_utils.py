@@ -19,6 +19,7 @@ class Cell:
     def __str__(self):
         return "{} {}".format(self.k, self.l)
 
+
 class PositionReport:
     """ Represents a time and location in which a node is in. """
     def __init__(self, x, y, t):
@@ -26,7 +27,7 @@ class PositionReport:
 
     def euclidean(self, coord_xj, coord_yj):
         """ Computes the euclidian distance between two points. """
-        euclidean = ((self.x - coord_xj) ** 2) + ((self.y - coord_yj) **2)
+        euclidean = ((self.x - coord_xj) ** 2) + ((self.y - coord_yj) ** 2)
         euclidean = euclidean**(1/2)
         return euclidean
 
@@ -48,6 +49,7 @@ class Encounter:
 
         return "{} {}".format(higher, lower)
 
+
 class Home:
     """ Represents an node (e.g. a user) home location """
 
@@ -55,12 +57,14 @@ class Home:
         self.location = l
         self.degree = d
 
+
 class Location:
     """ Represents a node (e.g. a user) current location. """
 
     def __init__(self, l, vt):
         self.location = l
         self.visitTime = vt
+
 
 class PositionEntry:
     """ Represents a position of a node in a time. Similar to PositionReport
@@ -74,6 +78,7 @@ class PositionEntry:
         self.coordY = coordY
         self.time = time
 
+
 class TravelPair:
     """ Represents a travel made by a user. """
 
@@ -86,6 +91,7 @@ class TravelPair:
 
     def get_location(self):
         return self.location
+
 
 class User:
     """ Represents a user in the trace. """

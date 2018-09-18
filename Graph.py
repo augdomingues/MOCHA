@@ -85,7 +85,7 @@ class Graph:
 
     def contains_edge(self, user1, user2):
         """
-            contains_edge: checks if the graph has edge between node user1 and user2
+            contains_edge: checks if the graph has edge between user1 and user2
             params:
                 user1: origin node (frm)
                 user2: destination node (to)

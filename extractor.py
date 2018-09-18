@@ -4,6 +4,7 @@
 import os
 from multiprocessing import Process
 
+
 class Extractor:
     """ Class that performs the metrics' extraction steps. """
 
@@ -27,7 +28,6 @@ class Extractor:
             for metric in self.metrics:
                 fit.write("{}{}.txt\n".format(self.folder, metric))
 
-
     def process_metric(self, metric):
         """ Process a given metric. """
         outfile = "{}{}{}.txt".format(self.folder, os.sep, metric)
@@ -47,7 +47,6 @@ class Extractor:
 
         # Write values to file
         obj.print()
-
 
     def extract(self):
         """ Organizes the parallel processing of the metrics. """
