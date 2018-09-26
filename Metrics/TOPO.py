@@ -42,10 +42,14 @@ class TOPO(Metric):
         for source, source_neighbors in self.topologies.items():
             for target, target_neighbors in self.topologies.items():
                 if source != target:
-                    encounter = str(Encounter(int(source), int(target)))
+                    encounter = str(Encounter(source, target))
 
                     intersec = source_neighbors.intersection(target_neighbors)
                     intersec = len(intersec)
+
+                    # Passes if there is no intersection, ie topo is 0
+                    if intersec == 0:
+                        continue
 
                     union = source_neighbors.union(target_neighbors)
                     union = len(union)

@@ -30,7 +30,7 @@ class A_EDGEP(Metric):
             for line in inn:
                 comps = line.strip().split(" ")
                 encounter_day = int(math.floor(float(comps[3]) / 86400))
-                encounter = Encounter(int(comps[0]), int(comps[1]))
+                encounter = Encounter(comps[0], comps[1])
                 enc = str(encounter)
 
                 value = self.edgep.get(enc, 0)

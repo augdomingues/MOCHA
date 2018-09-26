@@ -40,7 +40,9 @@ class SOCOR(Metric):
 
         for key in self.topo.keys():
             topo_value = self.topo[key]
-            edgep_value = self.edgep[key]
+
+            # If theres no edgep between nodes, then returns 0
+            edgep_value = self.edgep.get(key, 0)
 
             cov += (topo_value - mean_topo) * (edgep_value - mean_edgep)
 

@@ -72,6 +72,15 @@ class Principal:
             filename = parser.parse_swim(args[-1])
         return filename
 
+    def validate_trace(self, filename):
+        """ Validates the parsed trace before processing it. """
+        with open(filename, "r") as inn:
+            for index, line in enumerate(inn):
+                if len(line.strip().split()) < 9:
+                    print("Invalid input trace error:")
+                    print("Line {} has less than 9 fields".format(index))
+                    raise SystemError(0)
+
     def extract(self, args, filename):
         """ Extracts the metrics from the parsed file. """
         self.read_metrics()
@@ -101,6 +110,7 @@ class Principal:
 
             # Extract characteristics
             if "-e" in args:
+                self.validate_trace(filename)
                 self.extract(args, filename)
 
             # Classify characteristics

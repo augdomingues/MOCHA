@@ -41,7 +41,7 @@ class A_TOPO(Metric):
         for source, source_neighbors in self.topologies.items():
             for target, target_neighbors in self.topologies.items():
                 if source != target:
-                    encounter = str(Encounter(int(source), int(target)))
+                    encounter = str(Encounter(source, target))
 
                     intersec = source_neighbors.intersection(target_neighbors)
                     intersec = len(intersec)
