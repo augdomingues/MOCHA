@@ -3,7 +3,7 @@
     for each node in the trace.
 """
 from Metrics.Metric import Metric
-from Graph import Graph
+import networkx as nx
 from mocha_utils import Encounter
 
 class A_INCO(Metric):
@@ -12,7 +12,7 @@ class A_INCO(Metric):
     def __init__(self, infile, outfile, report_id, **kwargs):
         self.inco = {}
         self.a_inco = {}
-        self.graph = Graph()
+        self.graph = nx.Graph()
         self.infile = infile
         self.outfile = outfile
         self.report_id = report_id
@@ -36,23 +36,23 @@ class A_INCO(Metric):
 
                 inco_encounters = []
 
-                if self.graph.contains_edge(user1, user2):
+                if self.graph.has_edge(user1, user2):
                     enc = Encounter(int(user1), int(user2))
                     enc = str(enc)
                     inco_encounters = self.inco[enc]
-                    weight = float(self.graph.get_edge_weight(user1, user2))
+                    weight = float(self.graph[user1][user2]["weight"])
                     inco_encounters.append(float(comps[2]) - float(weight))
                     self.inco[enc] = inco_encounters
 
-                    self.graph.add_edge(user1, user2, float(comps[3]))
+                    self.graph.add_edge(user1, user2,weight=float(comps[3]))
                 else:
-                    self.graph.add_vertex(user1)
-                    self.graph.add_vertex(user2)
+                    self.graph.add_node(user1)
+                    self.graph.add_node(user2)
 
                     encounter = Encounter(int(user1), int(user2))
                     encounter = str(encounter)
                     self.inco[encounter] = []
-                    self.graph.add_edge(user1, user2, float(comps[3]))
+                    self.graph.add_edge(user1, user2, weight=float(comps[3]))
 
         for key, item in self.inco.items():
             nodea, nodeb = key.split(" ")

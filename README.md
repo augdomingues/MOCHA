@@ -22,6 +22,7 @@ But you can also add your own metrics.
 
 # Requirements
 Python 3.+
+Networkx 1.*+
 
 # How to use
 
