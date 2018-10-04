@@ -64,7 +64,7 @@ class Principal:
     def parse(self, args):
         """ Parse the input trace file. """
 
-        parser = Parser(self.configurationParameters.communicationRadius)
+        parser = Parser(ConfigurationParameters.communicationRadius)
         filename = ""
         if "-pr" in args:
             filename = parser.naive_raw(args[-1])
@@ -99,7 +99,6 @@ class Principal:
 
     def main(self, args):
         """ Main method that calls each step."""
-        self.read_configuration_parameters()
         filename = args[-1]
 
         if self.validate_input(args):
@@ -132,16 +131,7 @@ class Principal:
 
     def read_configuration_parameters(self):
         """ Read the config parameters from the file. If not exist, create. """
-        if os.path.exists("config.txt"):
-            with open("config.txt", "r") as entrada:
-                self.configurationParameters = ConfigurationParameters()
-                line = entrada.readline().split(" ")
-                radius = float(line[1])
-                self.configurationParameters.communicationRadius = radius * 1000
-        else:
-            print("Configuration file not found! Recreating!")
-            config_parameters = ConfigurationParameters()
-            config_parameters.recreateConfigurationFile()
+        ConfigurationParameters()
 
 
 if __name__ == "__main__":

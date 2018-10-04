@@ -13,7 +13,7 @@ class Extractor:
         self.folder = infile.replace(".csv", "").replace(".txt", "")
         self.folder = self.folder.replace("_parsed", "")
         self.folder += "_metrics_folder{}".format(os.sep)
-        self.kwargs = {"radius": 0.1}
+        self.kwargs = {"radius": ConfigurationParameters.communicationRadius}
         self.blocking_metrics = [] if blocking is None else blocking
 
         if not os.path.exists(self.folder):

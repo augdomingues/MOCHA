@@ -2,7 +2,8 @@
     This module contains inumerous structures that are used by MOCHA
     in its processing steps.
 """
-
+from math import radians, cos, sin, asin, sqrt
+from ConfigurationParameters import ConfigurationParameters
 
 class Cell:
     """ Represents a cell where nodes can be within. """
@@ -26,13 +27,27 @@ class PositionReport:
         self.x, self.y, self.t = x, y, t
 
     def euclidean(self, coord_xj, coord_yj):
-        """ Computes the euclidian distance between two points. """
+        """ Computes the euclidean distance between two points. """
         euclidean = ((self.x - coord_xj) ** 2) + ((self.y - coord_yj) ** 2)
         euclidean = euclidean**(1/2)
         return euclidean
 
+    def haversine(self, coord_xj, coord_yj):
+        AVG_EARTH_RADIUS = 6371 # in km
+        x, y, coord_xj, coord_yj = map(radians, (self.x, self.y, coord_xj, coord_yj))
+
+        lat = coord_xj - x
+        lon = coord_yj - y
+        d = sin(lat * 0.5) ** 2 + cos(x) * cos(coord_xj) * sin(lon * 0.5) ** 2
+        h = 2 * AVG_EARTH_RADIUS * asin(sqrt(d))
+        return h
+
     def __sub__(self, other):
-        return self.euclidean(other.x, other.y)
+        dfunction = ConfigurationParameters.distanceFunction
+        if dfunction == "euclidean":
+            return self.euclidean(other.x, other.y)
+        elif dfunction == "haversine":
+            return self.haversine(other.x, other.y)
 
 
 class Encounter:

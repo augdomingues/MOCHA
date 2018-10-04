@@ -1,1 +1,2 @@
-CommunicationRadius 0.1
+CommunicationRadius 0.05
+DistanceFunction haversine
