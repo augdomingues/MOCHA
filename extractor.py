@@ -3,7 +3,7 @@
 """
 import os
 from multiprocessing import Process
-
+from ConfigurationParameters import ConfigurationParameters
 
 class Extractor:
     """ Class that performs the metrics' extraction steps. """
