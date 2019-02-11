@@ -16,8 +16,15 @@ class Classifier:
 
     def __init__(self, filename):
         """ Initiate structures in the class. """
-        self.files = ["CODU", "INCO", "EDGEP",
-                      "TOPO", "RADG", "VIST", "TRVD", "SPAV", "CONEN"]
+        self.files = ["CODU",
+                      "EDGEP",
+                      "INCO",
+                      "TOPO",
+                      "RADG",
+                      "VIST",
+                      "TRVD",
+                      "SPAV",
+                      "CONEN"]
         self.barra = os.sep
         self.filename = filename.split(".")[0].replace("_parsed", "")
         self.filename += "_metrics_folder{}".format(self.barra)
@@ -78,8 +85,10 @@ class Classifier:
                         input("File '{}' empty. [Enter] to proceed.".format(f))
                         continue
                     # Remove the IDs if they exist
-                    if len(data.shape) == 2:
+                    if len(data.shape) == 2 and data.shape[1] == 2:
                         data = data[:, 1]
+                    elif len(data.shape) == 2 and data.shape[1] == 3:
+                        data = data[:, 2]
                     name, params = self.best_fit_distribution(data, f)
                     metric_name = f
                     saida.write("{},{},{}\n".format(metric_name, name, params))

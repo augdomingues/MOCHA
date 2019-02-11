@@ -7,6 +7,7 @@ import math
 from Metrics.Metric import Metric
 from mocha_utils import Encounter
 
+
 class EDGEP(Metric):
     """ EDGEP extraction class. """
 
@@ -30,7 +31,8 @@ class EDGEP(Metric):
         with open(self.infile, "r") as inn:
             for line in inn:
                 comps = line.strip().split(" ")
-                encounter_day = int(math.floor(float(comps[3]) / 86400))
+                # Changed day from 86400 (day) to 3600 (hourly)
+                encounter_day = int(math.floor(float(comps[3]) / 3600))
                 encounter = Encounter(comps[0], comps[1])
                 enc = str(encounter)
 
