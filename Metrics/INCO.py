@@ -6,6 +6,7 @@ from Metrics.Metric import Metric
 import networkx as nx
 from mocha_utils import Encounter
 
+
 class INCO(Metric):
     """ INCO extraction class. """
 
@@ -53,7 +54,7 @@ class INCO(Metric):
                     encounter = Encounter(user1, user2)
                     encounter = str(encounter)
                     self.inco[encounter] = []
-                    self.graph.add_edge(user1, user2,weight=float(comps[3]))
+                    self.graph.add_edge(user1, user2, weight=float(comps[3]))
 
     def commit(self):
         return {}

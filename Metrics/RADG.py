@@ -121,17 +121,16 @@ class RADG(Metric):
                 user2_HomeX, user2_HomeY = user2_Home.split(" ")
 
                 user1_Dist = self.euclidean((user1_X, user1_Y), (user1_HomeX,
-                                           user1_HomeY))
+                                            user1_HomeY))
 
                 user2_Dist = self.euclidean((user2_X, user2_Y), (user2_HomeX,
-                                           user2_HomeY))
+                                            user2_HomeY))
 
                 currentValue = self.radius.get(user1, 0)
                 self.radius[user1] = max(currentValue, user1_Dist)
 
                 currentValue = self.radius.get(user2, 0)
                 self.radius[user2] = max(currentValue, user2_Dist)
-
 
     def commit(self):
         return {}

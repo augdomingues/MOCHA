@@ -3,6 +3,7 @@
     each pair of contacts in the trace.
 
 """
+from collections import defaultdict
 import math
 from Metrics.Metric import Metric
 from mocha_utils import Encounter
@@ -12,7 +13,7 @@ class EDGEP(Metric):
     """ EDGEP extraction class. """
 
     def __init__(self, infile, outfile, report_id, **kwargs):
-        self.edgep = {}
+        self.edgep = defaultdict(int)
         self.encounters = {}
         self.infile = infile
         self.outfile = outfile
@@ -36,11 +37,10 @@ class EDGEP(Metric):
                 encounter = Encounter(comps[0], comps[1])
                 enc = str(encounter)
 
-                value = self.edgep.get(enc, 0)
                 day = self.encounters.get(enc, -1)
 
                 if day != encounter_day:
-                    self.edgep[enc] = value + 1
+                    self.edgep[enc] += 1
                     self.encounters[enc] = encounter_day
 
     def commit(self):

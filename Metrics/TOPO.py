@@ -2,19 +2,20 @@
     This module extracts the Topological Overlap (TOPO) from all
     the pair of contacts in the trace.
 """
+from collections import defaultdict
 from Metrics.Metric import Metric
 from mocha_utils import Encounter
+
 
 class TOPO(Metric):
     """ TOPO extraction class. """
 
     def __init__(self, infile, outfile, report_id, **kwargs):
         self.topo = {}
-        self.topologies = {}
+        self.topologies = defaultdict(set)
         self.infile = infile
         self.outfile = outfile
         self.report_id = report_id
-
 
     def print(self):
         with open(self.outfile, "w+") as out:
@@ -31,12 +32,7 @@ class TOPO(Metric):
                 comps = line.strip().split(" ")
                 user1, user2 = comps[0], comps[1]
 
-                if user1 not in self.topologies:
-                    self.topologies[user1] = set()
                 self.topologies[user1].add(user2)
-
-                if user2 not in self.topologies:
-                    self.topologies[user2] = set()
                 self.topologies[user2].add(user1)
 
         for source, source_neighbors in self.topologies.items():

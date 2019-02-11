@@ -2,14 +2,16 @@
     This module extracts the Contact Entropy (CONEN) for each pair of
     contacts in the trace.
 """
+from collections import defaultdict
 import math
 from Metrics.Metric import Metric
+
 
 class CONEN(Metric):
     """ CONEN extraction class. """
 
     def __init__(self, infile, outfile, report_id, **kwargs):
-        self.conen = {}
+        self.conen = defaultdict(dict)
         self.infile = infile
         self.outfile = outfile
         self.report_id = report_id
@@ -25,22 +27,12 @@ class CONEN(Metric):
     def extract(self):
         with open(self.infile, "r") as inn:
             for line in inn:
-
                 comps = line.strip().split(" ")
-
                 user1, user2 = comps[0], comps[1]
-
-                if user1 in self.conen:
-                    value = self.conen[user1].get(user2, 0)
-                    self.conen[user1][user2] = value + 1
-                else:
-                    self.conen[user1] = {}
-
-                if user2 in self.conen:
-                    value = self.conen[user2].get(user1, 0)
-                    self.conen[user2][user1] = value + 1
-                else:
-                    self.conen[user2] = {}
+                value = self.conen[user1].get(user2, 0)
+                self.conen[user1][user2] = value + 1
+                value = self.conen[user2].get(user1, 0)
+                self.conen[user2][user1] = value + 1
 
         for key, item in self.conen.items():
             summ = sum(item.values())
@@ -49,7 +41,6 @@ class CONEN(Metric):
             for value in item.values():
                 entropy += (value/summ) * math.log2((1/(value/summ)))
             self.conen[key] = entropy
-
 
     def explain(self):
         return "CONEN"

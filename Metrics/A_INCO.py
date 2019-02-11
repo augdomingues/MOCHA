@@ -2,16 +2,18 @@
     This modules extracts the average Inter-Contact duration (INCO)
     for each node in the trace.
 """
+from collections import defaultdict
 from Metrics.Metric import Metric
 import networkx as nx
 from mocha_utils import Encounter
+
 
 class A_INCO(Metric):
     """ Average INCO extraction class. """
 
     def __init__(self, infile, outfile, report_id, **kwargs):
         self.inco = {}
-        self.a_inco = {}
+        self.a_inco = defaultdict(list)
         self.graph = nx.Graph()
         self.infile = infile
         self.outfile = outfile
@@ -44,7 +46,7 @@ class A_INCO(Metric):
                     inco_encounters.append(float(comps[2]) - float(weight))
                     self.inco[enc] = inco_encounters
 
-                    self.graph.add_edge(user1, user2,weight=float(comps[3]))
+                    self.graph.add_edge(user1, user2, weight=float(comps[3]))
                 else:
                     self.graph.add_node(user1)
                     self.graph.add_node(user2)
@@ -57,12 +59,7 @@ class A_INCO(Metric):
         for key, item in self.inco.items():
             nodea, nodeb = key.split(" ")
 
-            if nodea not in self.a_inco:
-                self.a_inco[nodea] = []
             self.a_inco[nodea] += item
-
-            if nodeb not in self.a_inco:
-                self.a_inco[nodeb] = []
             self.a_inco[nodeb] += item
 
         for key, item in self.a_inco.items():

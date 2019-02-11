@@ -3,15 +3,17 @@
     node in the graph.
 """
 import math
+from collections import defaultdict
 from Metrics.Metric import Metric
 from mocha_utils import Encounter
+
 
 class A_EDGEP(Metric):
     """ Average EDGEP extraction class. """
 
     def __init__(self, infile, outfile, report_id, **kwargs):
-        self.edgep = {}
-        self.a_edgep = {}
+        self.edgep = defaultdict(int)
+        self.a_edgep = defaultdict(list)
         self.encounters = {}
         self.infile = infile
         self.outfile = outfile
@@ -33,27 +35,20 @@ class A_EDGEP(Metric):
                 encounter = Encounter(comps[0], comps[1])
                 enc = str(encounter)
 
-                value = self.edgep.get(enc, 0)
                 day = self.encounters.get(enc, -1)
 
                 if day != encounter_day:
-                    self.edgep[enc] = value + 1
+                    self.edgep[enc] += 1
                     self.encounters[enc] = encounter_day
 
         for key, item in self.edgep.items():
             nodea, nodeb = key.split(" ")
 
-            if nodea not in self.a_edgep:
-                self.a_edgep[nodea] = []
             self.a_edgep[nodea].append(item)
-
-            if nodeb not in self.a_edgep:
-                self.a_edgep[nodeb] = []
             self.a_edgep[nodeb].append(item)
 
         for key, item in self.a_edgep.items():
             self.a_edgep[key] = sum(item)/max(len(item), 1)
-
 
     def commit(self):
         return {}

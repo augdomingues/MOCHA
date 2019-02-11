@@ -2,16 +2,18 @@
     This module extracts the average Topological Overlap (TOPO) for
     every node in the trace.
 """
+from collections import defaultdict
 from Metrics.Metric import Metric
 from mocha_utils import Encounter
+
 
 class A_TOPO(Metric):
     """ Average TOPO extraction class. """
 
     def __init__(self, infile, outfile, report_id, **kwargs):
         self.topo = {}
-        self.a_topo = {}
-        self.topologies = {}
+        self.a_topo = defaultdict(list)
+        self.topologies = defaultdict(set)
         self.infile = infile
         self.outfile = outfile
         self.report_id = report_id
@@ -30,12 +32,7 @@ class A_TOPO(Metric):
                 comps = line.strip().split(" ")
                 user1, user2 = comps[0], comps[1]
 
-                if user1 not in self.topologies:
-                    self.topologies[user1] = set()
                 self.topologies[user1].add(user2)
-
-                if user2 not in self.topologies:
-                    self.topologies[user2] = set()
                 self.topologies[user2].add(user1)
 
         for source, source_neighbors in self.topologies.items():
@@ -56,12 +53,7 @@ class A_TOPO(Metric):
         for key, item in self.topo.items():
             nodea, nodeb = key.split(" ")
 
-            if nodea not in self.a_topo:
-                self.a_topo[nodea] = []
             self.a_topo[nodea].append(item)
-
-            if nodeb not in self.a_topo:
-                self.a_topo[nodeb] = []
             self.a_topo[nodeb].append(item)
 
         for key, item in self.a_topo.items():
