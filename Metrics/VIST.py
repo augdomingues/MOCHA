@@ -5,6 +5,7 @@
 import math
 from Metrics.Metric import Metric
 
+
 class VIST(Metric):
     """ VIST extraction class. """
 
@@ -17,7 +18,7 @@ class VIST(Metric):
         self.venues = kwargs["venues"]
         self.locations = kwargs["locations"]
 
-        #Get the cached locations
+        # Get the cached locations
         self.cache_locations = kwargs["cache_locations"]
 
     def print(self):
@@ -26,7 +27,6 @@ class VIST(Metric):
                 if self.report_id:
                     out.write("{},".format(key))
                 out.write("{}\n".format(item))
-
 
     def euclidean(self, xval, yval):
         return math.sqrt(sum([(a - b) ** 2 for a, b in zip(xval, yval)]))
@@ -76,7 +76,6 @@ class VIST(Metric):
 
                     self.cache_locations[key1] = user1_venue
                     self.cache_locations[key2] = user2_venue
-
 
                 if user1 in self.vist:
                     visit_time = self.vist[user1].get(user1_venue, 0.0)

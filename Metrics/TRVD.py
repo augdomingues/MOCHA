@@ -6,6 +6,7 @@ import math
 from Metrics.Metric import Metric
 from mocha_utils import TravelPair
 
+
 class TRVD(Metric):
     """ TRVD extraction class. """
 
@@ -25,7 +26,7 @@ class TRVD(Metric):
 
     def euclidean(self, x, y):
         """ Computes the euclidean distance between two points. """
-        return math.sqrt(sum([(float(a) - float(b)) ** 2 for a, b in zip(x, y)]))
+        return math.sqrt(sum((float(a) - float(b)) ** 2 for a, b in zip(x, y)))
 
     @Metric.timeexecution
     def extract(self):
@@ -42,7 +43,8 @@ class TRVD(Metric):
                     curr = self.trvd[user1][-1].location
                     curr_x, curr_y = curr.split(" ")
 
-                    distance = self.euclidean((user1_x, user1_y), (curr_x, curr_y))
+                    distance = self.euclidean((user1_x, user1_y),
+                                              (curr_x, curr_y))
 
                     travel_pair = TravelPair(user1_x + " " + user1_y, distance)
                     self.trvd[user1].append(travel_pair)
@@ -54,7 +56,8 @@ class TRVD(Metric):
                     curr = self.trvd[user2][-1].location
                     curr_x, curr_y = curr.split(" ")
 
-                    distance = self.euclidean((user2_x, user2_y), (curr_x, curr_y))
+                    distance = self.euclidean((user2_x, user2_y),
+                                              (curr_x, curr_y))
 
                     travel_pair = TravelPair(user2_x + " " + user2_y, distance)
                 else:
@@ -71,4 +74,3 @@ class TRVD(Metric):
 
     def explain(self):
         return "TRVD"
-

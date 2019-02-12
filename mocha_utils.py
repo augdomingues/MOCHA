@@ -5,6 +5,7 @@
 from math import radians, cos, sin, asin, sqrt
 from ConfigurationParameters import ConfigurationParameters
 
+
 class Cell:
     """ Represents a cell where nodes can be within. """
 
@@ -33,8 +34,9 @@ class PositionReport:
         return euclidean
 
     def haversine(self, coord_xj, coord_yj):
-        AVG_EARTH_RADIUS = 6371 # in km
-        x, y, coord_xj, coord_yj = map(radians, (self.x, self.y, coord_xj, coord_yj))
+        AVG_EARTH_RADIUS = 6371  # in km
+        x, y, coord_xj, coord_yj = map(radians,
+                                       (self.x, self.y, coord_xj, coord_yj))
 
         lat = coord_xj - x
         lon = coord_yj - y

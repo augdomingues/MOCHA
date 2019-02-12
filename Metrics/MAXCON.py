@@ -1,5 +1,6 @@
 from Metrics.Metric import Metric
 
+
 class MAXCON(Metric):
 
     def __init__(self, infile, outfile, reportID, **kwargs):

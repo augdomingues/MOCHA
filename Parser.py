@@ -107,8 +107,11 @@ class Parser:
 
     def get_line(self, line):
         """ Reads and formats a line from the input trace. """
-        l = line.strip().split(" ")
-        return [l[0], float(l[1]), float(l[2]), float(l[3])]
+        line = line.strip().split(" ")
+        return [line[0],
+                float(line[1]),
+                float(line[2]),
+                float(line[3])]
 
     def naive_raw(self, filename):
         """ Parse a raw trace not considering the cells. """

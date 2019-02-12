@@ -4,6 +4,7 @@
 import numpy as np
 from Metrics.Metric import Metric
 
+
 class SOCOR(Metric):
     """ SOCOR extraction class. """
 
@@ -30,7 +31,6 @@ class SOCOR(Metric):
         cov = self.covariance()
         div = std_topo * std_edgep
         self.socor = cov/max(1, div)
-
 
     def covariance(self):
         """ Calculates the covariance between two variables. """

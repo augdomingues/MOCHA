@@ -1,5 +1,6 @@
 import os
 
+
 class ConfigurationParameters:
     """ Represents the configuration parameters for the trace parsing. """
 
@@ -25,5 +26,6 @@ class ConfigurationParameters:
 
             ConfigurationParameters.communicationRadius = 10
             ConfigurationParameters.distanceFunction = "haversine"
-        except:
+        except BaseException:
             print("Error recreating configuration file!")
+            raise

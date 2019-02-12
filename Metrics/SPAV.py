@@ -6,6 +6,7 @@ import math
 import random
 from Metrics.Metric import Metric
 
+
 class SPAV(Metric):
     """ SPAV extraction class. """
 
@@ -32,7 +33,6 @@ class SPAV(Metric):
                     out.write("{},".format(key))
                 out.write("{}\n".format(item))
 
-
     def explain(self):
         strg = """
 
@@ -43,7 +43,6 @@ class SPAV(Metric):
 
         """
         return strg
-
 
     @Metric.timeexecution
     def extract_locations(self):
@@ -62,7 +61,6 @@ class SPAV(Metric):
                 if key not in self.locations:
                     self.locations[key] = self.locationsIndex
                     self.locationsIndex += 1
-
 
     def collect_maxes(self):
         """ Extract max values from the trace. """
@@ -97,7 +95,6 @@ class SPAV(Metric):
                 random_index = random.randint(0, len(keys) - 1)
             self.venues[venues_index] = keys[random_index]
             venues_index += 1
-
 
     def euclidean(self, x, y):
         """ Computes the euclidean distance. """
@@ -149,7 +146,6 @@ class SPAV(Metric):
                     self.cache_locations[key1] = user1_venue
                     self.cache_locations[key2] = user2_venue
 
-
                 if user1 in self.users_venues:
                     value = self.users_venues[user1].get(user1_venue, 0)
                     self.users_venues[user1][user1_venue] = value + 1
@@ -162,7 +158,6 @@ class SPAV(Metric):
                 else:
                     self.users_venues[user2] = {}
 
-
         for key, item in self.users_venues.items():
             summ = sum([v for v in item.values()])
             summ = max(summ, 1)
@@ -170,7 +165,6 @@ class SPAV(Metric):
             for v in item.values():
                 entropy += (v/summ) * math.log2((1/(v/summ)))
             self.users_venues[key] = entropy
-
 
     def commit(self):
         values = {"venues": self.venues, "locations": self.locations,

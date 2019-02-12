@@ -2,7 +2,6 @@
     This module contains the main class that executes the MOCHA framework.
 """
 import sys
-import os
 from ConfigurationParameters import ConfigurationParameters
 from Parser import Parser
 from Classifier import Classifier

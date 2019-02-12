@@ -7,7 +7,6 @@
 """
 
 from Metrics.Metric import Metric
-import networkx as nx
 
 
 class DIAM(Metric):

@@ -8,6 +8,7 @@
 from Metrics.Metric import Metric
 import networkx as nx
 
+
 class ECCEN(Metric):
     """ ECCEN extraction class. """
 
@@ -37,8 +38,9 @@ class ECCEN(Metric):
                 self.graph.add_edge(user1, user2)
         try:
             self.eccen = nx.eccentricity(self.graph)
-        except:
+        except BaseException:
             self.eccen["Any node"] = "infinity"
+            raise
 
     def commit(self):
         values = {"eccen": self.eccen}

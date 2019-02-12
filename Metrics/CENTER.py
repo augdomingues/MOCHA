@@ -39,9 +39,10 @@ class CENTER(Metric):
             try:
                 self.eccen = nx.eccentricity(self.graph)
                 self.center = nx.center()
-            except:
+            except BaseException:
                 self.eccen["Any node"] = "infinity"
                 self.center = []
+                raise
 
     def commit(self):
         return {}

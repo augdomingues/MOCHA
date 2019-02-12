@@ -1,20 +1,20 @@
 # Use a # to ignore a metric
 # Use a * to flag a metric as blocking (must be executed first)
-#INCO
-#CODU
+INCO
+CODU
 EDGEP*
-#TOPO*
+TOPO*
 #MAXCON
-#RADG
+RADG
 A_EDGEP
-#A_TOPO
-#A_INCO
-#A_CODU
-#VIST
-#TRVD
-#SPAV*
-#CONEN
-#SOCOR
+A_TOPO
+A_INCO
+A_CODU
+VIST
+TRVD
+SPAV*
+CONEN
+SOCOR
 #ECCEN*
 #DIAM
 #RADIUS
