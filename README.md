@@ -53,4 +53,19 @@ $ python3 Mocha.py -pr -e -c mytrace.csv # Parse, extract and classify the RAW t
 $ python3 Mocha.py -e mytrace_parsed # Extract the metrics from mytrace_parsed.csv
 $ python3 Mocha.py -c mytrace_parsed # Classify the metrics
 $ python3 Mocha.py -id -e mytrace_parsed # Extract metrics with respective users' IDs
+
 ```
+
+__Publications__
+This tool is extensively analyzed and described in the following works:
+```tex
+@INPROCEEDINGS{MSWiM2018-Mocha:Souza+3,
+  author =       {Fabrício R. de Souza and Augusto C.S.A. Domingues and Pedro O.S. Vaz de Melo and Antonio A. F. Loureiro},
+  title =        {{MOCHA: A Tool for Mobility Characterization}},
+  booktitle =    {Proceedings of the 21st ACM International Conference on Modeling, Analysis and Simulation of Wireless and Mobile Systems (MSWIM '18)},
+  year =         {2018},
+  pages =        {281--288},
+  doi =          {10.1145/3242102.3242124}
+}
+```
+(The publication above in also available for download in this repository ([Link](MSWIM_MOCHA.pdf))
