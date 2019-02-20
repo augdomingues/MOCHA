@@ -33,25 +33,20 @@ class Extractor:
         """ Process a given metric. """
         outfile = "{}{}{}.txt".format(self.folder, os.sep, metric)
 
-        # Import module
         metric_class = __import__("Metrics.{}".format(metric))
         metric_class = getattr(metric_class, metric)
         metric_class = getattr(metric_class, metric)
 
-        # Create object metric and extract
         obj = metric_class(self.infile, outfile, self.report_id, **self.kwargs)
         obj.extract()
 
-        # Obtain return structures, if any
         returned_structures = obj.commit()
         self.kwargs = {**self.kwargs, **returned_structures}
 
-        # Write values to file
         obj.print()
 
     def extract(self):
         """ Organizes the parallel processing of the metrics. """
-        # self.blocking_metrics = ["SPAV", "TOPO", "EDGEP"]
         for blocking in self.blocking_metrics:
             self.process_metric(blocking)
 

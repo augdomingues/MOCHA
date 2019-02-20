@@ -29,7 +29,7 @@ class Principal:
         print("|    ( (                                                    |")
         print("|   _)_)_                                                   |")
         print("| c(  M  ) MOCHA: tool for MObility CHaracteristics Analysis|")
-        print("| ,-\___/-.                                                 |")
+        print("| ,-\___/-.                                                 |") # noqa
         print("| `-------'                                                 |")
         print("|                                                           |")
         print("| Usage: Mocha.py [-pr, -ps, -e, -c, -id] filename          |")
@@ -78,7 +78,7 @@ class Principal:
                 if len(line.strip().split()) < 9:
                     print("Invalid input trace error:")
                     print("Line {} has less than 9 fields".format(index))
-                    raise SystemError(0)
+                    raise
 
     def extract(self, args, filename):
         """ Extracts the metrics from the parsed file. """
