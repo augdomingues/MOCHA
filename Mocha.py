@@ -2,10 +2,12 @@
     This module contains the main class that executes the MOCHA framework.
 """
 import sys
+from math import inf
 from ConfigurationParameters import ConfigurationParameters
 from Parser import Parser
 from Classifier import Classifier
 from extractor import Extractor
+
 
 
 class Principal:
@@ -20,7 +22,8 @@ class Principal:
                         "-e": "Extracting ",
                         "-pr": "Parsing RAW ",
                         "-c":  "Classify metrics ",
-                        "-id": "Report users' ID "}
+                        "-id": "Report users' ID ",
+                        "-st": ""}
 
     def usage(self):
         """ Visual guidance of how to use MOCHA. """
@@ -37,13 +40,14 @@ class Principal:
         print("| ['-pr', '-ps', '-e']: Parse (RAW), Parse (SWIM) , Extract |")
         print("| [ '-c' ]      : Classify distributions                    |")
         print("| [ '-id']      : Report ID                                 |")
+        print("| [ '-st X']    : set node stay time to X (in seconds)      |")
         print("| filename      : file to be parsed/processed               |")
         print("|               FILENAME MUST BE THE LAST ARGUMENT          |")
         print("+-----------------------------------------------------------+")
 
     def validate_input(self, args):
         """ Checks if the input parameters are valid. """
-        valid_args = ["-ps", "-e", "-pr", "-c", "-id"]
+        valid_args = ["-ps", "-e", "-pr", "-c", "-id", "-st"]
         for i in range(0, len(args)-1):
             if "-" in args[i] and args[i] not in valid_args:
                 self.usage()
@@ -60,10 +64,10 @@ class Principal:
             print(self.summary[args[i]], end="")
         print("from {}\n".format(args[-1]))
 
-    def parse(self, args):
+    def parse(self, args, staytime):
         """ Parse the input trace file. """
 
-        parser = Parser(ConfigurationParameters.communicationRadius)
+        parser = Parser(ConfigurationParameters.communicationRadius, staytime)
         filename = ""
         if "-pr" in args:
             filename = parser.naive_raw(args[-1])
@@ -104,7 +108,13 @@ class Principal:
             self.summarize(args)
             # Parse trace
             if "-pr" in args or "-ps" in args:
-                filename = self.parse(args)
+                if "-st" in args:
+                    for i in range(len(args)):
+                        if args[i] == "-st":
+                            staytime = args[i+1]
+                else:
+                    staytime = inf
+                filename = self.parse(args, staytime)
 
             # Extract characteristics
             if "-e" in args:
