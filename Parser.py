@@ -6,7 +6,7 @@
     to extract the metrics in the subsequent steps.
 
 """
-from math import ceil
+from math import ceil, inf
 from operator import itemgetter
 import os
 from mocha_utils import (
@@ -18,9 +18,10 @@ from Bar import Bar
 
 class Parser:
 
-    def __init__(self, r):
+    def __init__(self, r, stayTime):
         """ Init the class values. """
         self.r = r
+        self.stayTime = stayTime
         self.maxX = 0
         self.maxY = 0
         self.maxT = 0
@@ -137,7 +138,7 @@ class Parser:
                 positions[_id] = node_position
 
                 for other_id, item in positions.items():
-                    if other_id != _id:
+                    if other_id != _id and item.x != inf:
                         contact_exists = other_id in contacts[_id]
                         contact_exists = contact_exists or _id in contacts[other_id]
 
@@ -161,7 +162,13 @@ class Parser:
 
                             del contacts[_id][other_id]
                             del contacts[other_id][_id]
-
+            
+            curr_time = time
+            for node_id in positions.keys():
+                reported_time = positions[node_id].t
+                if curr_time - reported_time > self.stayTime:
+                    positions[node_id].x = inf
+                    positions[node_id].y = inf
             # At this point, the trace has ended, but we still need to close
             # open contacts.
 
