@@ -23,7 +23,7 @@ class Principal:
                         "-pr": "Parsing RAW ",
                         "-c":  "Classify metrics ",
                         "-id": "Report users' ID ",
-                        "-st": ""}
+                        "-st": "Stay time:"}
 
     def usage(self):
         """ Visual guidance of how to use MOCHA. """
@@ -60,8 +60,14 @@ class Principal:
     def summarize(self, args):
         """ Output the selected steps. """
         print("\n\t\t\t", end="")
+        staytimevalue = False
         for i in range(0, len(args) - 1):
+            if staytimevalue:
+                print(args[i])
+                staytimevalue = False
             print(self.summary[args[i]], end="")
+            if args[i] == "-st":
+                staytimevalue = True
         print("from {}\n".format(args[-1]))
 
     def parse(self, args, staytime):
