@@ -65,6 +65,7 @@ class Principal:
             if staytimevalue:
                 print(args[i])
                 staytimevalue = False
+                continue
             print(self.summary[args[i]], end="")
             if args[i] == "-st":
                 staytimevalue = True
