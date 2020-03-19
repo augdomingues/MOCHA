@@ -21,7 +21,7 @@ class Parser:
     def __init__(self, r, stayTime):
         """ Init the class values. """
         self.r = r
-        self.stayTime = stayTime
+        self.stayTime = float(stayTime)
         self.maxX = 0
         self.maxY = 0
         self.maxT = 0
