@@ -3,6 +3,7 @@
     each node in the trace.
 """
 import math
+from haversine import haversine
 from Metrics.Metric import Metric
 from mocha_utils import TravelPair
 
@@ -43,8 +44,10 @@ class TRVD(Metric):
                     curr = self.trvd[user1][-1].location
                     curr_x, curr_y = curr.split(" ")
 
-                    distance = self.euclidean((user1_x, user1_y),
-                                              (curr_x, curr_y))
+                    # distance = self.euclidean((user1_x, user1_y),
+                    #                           (curr_x, curr_y))
+                    distance = haversine((float(user1_x), float(user1_y)),
+                                         (float(curr_x), float(curr_y)))
 
                     travel_pair = TravelPair(user1_x + " " + user1_y, distance)
                     self.trvd[user1].append(travel_pair)
@@ -56,9 +59,11 @@ class TRVD(Metric):
                     curr = self.trvd[user2][-1].location
                     curr_x, curr_y = curr.split(" ")
 
-                    distance = self.euclidean((user2_x, user2_y),
-                                              (curr_x, curr_y))
-
+                    # distance = self.euclidean((user2_x, user2_y),
+                    #                           (curr_x, curr_y))
+                    distance = haversine((float(user2_x), float(user2_y)),
+                                         (float(curr_x), float(curr_y)))
+                    
                     travel_pair = TravelPair(user2_x + " " + user2_y, distance)
                 else:
                     travel_pair = TravelPair(user2_x + " " + user2_y, 0.0)
