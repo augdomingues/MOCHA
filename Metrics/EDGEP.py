@@ -33,7 +33,7 @@ class EDGEP(Metric):
             for line in inn:
                 comps = line.strip().split(" ")
                 # Changed day from 86400 (day) to 3600 (hourly)
-                encounter_day = int(math.floor(float(comps[3]) / 3600))
+                encounter_day = int(math.floor(float(comps[3]) / 86400))
                 encounter = Encounter(comps[0], comps[1])
                 enc = str(encounter)
 
